@@ -1,3 +1,5 @@
+<img src="docs/icon.png" alt="SimpleRogueHelper - Forever" width="128" align="right">
+
 # SimpleRogueHelper - Forever
 
 **Energy marks for rogues on WoW Forever.** On the game's own personal resource display, a thin
