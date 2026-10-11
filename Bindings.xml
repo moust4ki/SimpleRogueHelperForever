@@ -1,0 +1,5 @@
+<Bindings>
+    <Binding name="SIMPLEROGUEHELPER_TOGGLE" header="SIMPLEROGUEHELPER" category="ADDONS">
+        SimpleRogueHelper_ToggleWindow()
+    </Binding>
+</Bindings>

@@ -1,0 +1,18 @@
+## Interface: 16001
+## Title: SimpleRogueHelper - Forever
+## IconTexture: Interface\Icons\Ability_Rogue_Eviscerate
+## Notes: Rogues: marks on the energy bar of the game's personal resource display, at the cost of the spells you choose, lit once you have enough energy.
+## Notes-frFR: Voleurs : des traits sur la barre d'énergie de la barre de ressources personnelle du jeu, au coût des sorts choisis, allumés dès que vous avez assez d'énergie.
+## Author: moust4ki
+## Version: 1.0.0
+## SavedVariablesPerCharacter: SimpleRogueHelperCharDB
+## X-Website: https://github.com/moust4ki/SimpleRogueHelperForever
+
+Locales\enUS.lua
+Locales\frFR.lua
+Locales\deDE.lua
+Locales\esES.lua
+Locales\itIT.lua
+Core.lua
+EnergyMarks.lua
+Window.lua
