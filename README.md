@@ -2,6 +2,8 @@
 
 # SimpleRogueHelper - Forever
 
+Download: [CurseForge](https://www.curseforge.com/wow/addons/simpleroguehelper-forever)
+
 **Energy marks for rogues on WoW Forever.** On the game's own personal resource display, a thin
 mark on the energy bar at the energy each spell you choose costs: dim below it, lit (gold) once you
 have enough energy to cast it.
