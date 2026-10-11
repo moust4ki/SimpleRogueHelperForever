@@ -7,6 +7,7 @@
 ## Version: 1.0.0
 ## SavedVariablesPerCharacter: SimpleRogueHelperCharDB
 ## X-Website: https://github.com/moust4ki/SimpleRogueHelperForever
+## X-Curse-Project-ID: 1738553
 
 Locales\enUS.lua
 Locales\frFR.lua
