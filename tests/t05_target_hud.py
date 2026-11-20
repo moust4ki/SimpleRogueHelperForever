@@ -1,8 +1,9 @@
-# Under the target's health bar (an option, off at first): on the enemy's
-# nameplate, under its cast bar, the energy with its marks and the combo
-# points centered under it. Shown for an enemy targeted whose nameplate is
-# there, hidden otherwise; in combat the values the game hides go straight
-# to the bars (no arithmetic or comparison on them, no size read).
+# Above the target's health bar (an option, off at first): on the enemy's
+# nameplate, from the top, the combo points centered, then the energy with
+# its marks, right on the health bar. Shown for an enemy targeted whose
+# nameplate is there, hidden otherwise; in combat the values the game hides
+# go straight to the bars (no arithmetic or comparison on them, no size
+# read).
 import os
 import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -19,30 +20,32 @@ fire("PLAYER_TARGET_CHANGED")
 
 section("A  off at first")
 check("A saved off", SimpleRogueHelperCharDB.hud, false)
-check("A an enemy targeted, its nameplate there: nothing under it", hud(), "hidden")
+check("A an enemy targeted, its nameplate there: nothing on it", hud(), "hidden")
 check("A (no mark there)", hudMarks(), "")
 check("A the personal resource display's marks as before", marks(), "35@70.0 lit 45@90.0 dim")
 W:Open()
 check("A the window: the option first, unticked", W.checks[1].id .. " " .. tostring(W.checks[1].get()), "hud false")
 check("A its tip", W.frame.tip.text, L.TIP_HUD)
 
-section("B  on (the window, A): under the target's health bar")
+section("B  on (the window, A): above the target's health bar")
 tap("PAD1")
 check("B saved on", SimpleRogueHelperCharDB.hud, true)
 check("B the row ticked", W.frame.rows[1].check.shown, true)
 tap("PAD2")
 check("B on the target's nameplate: energy 40 of 100, 2 combo points", hud(), "on plate1, energy 40/100, combo 2")
-local f, cast = HUD.frame, PLATES.target.UnitFrame.CastBarsContainer
+local f, health = HUD.frame, PLATES.target.UnitFrame.HealthBarsContainer
 local p1, p2 = { f:GetPoint(1) }, { f:GetPoint(2) }
-check("B under its cast bar (never over it), as wide", p1[1] .. ">" .. p1[3] .. " " .. p2[1] .. ">" .. p2[3] .. " " .. tostring(p1[2] == cast and p2[2] == cast) .. " " .. p1[5],
-  "TOPLEFT>BOTTOMLEFT TOPRIGHT>BOTTOMRIGHT true -4")
+check("B on its health bar (clear of the character under it), as wide", p1[1] .. ">" .. p1[3] .. " " .. p2[1] .. ">" .. p2[3] .. " " .. tostring(p1[2] == health and p2[2] == health) .. " " .. p1[5],
+  "BOTTOMLEFT>TOPLEFT BOTTOMRIGHT>TOPRIGHT true 6")
+local e1 = { HUD.energy:GetPoint(1) }
+check("B the energy at its bottom, on the health bar", e1[1] .. " " .. e1[3], "BOTTOMLEFT BOTTOMLEFT")
 check("B the marks on its energy bar, where each spell's cost is", hudMarks(), "35@0.35 lit 45@0.45 dim")
 local m = HUD.host.marks[1]
 local _, rel, relPoint = m.tex:GetPoint(1)
 check("B (a mark at the end of its own hidden bar)", tostring(rel == m.at:GetStatusBarTexture()) .. " " .. relPoint, "true RIGHT")
 check("B the personal resource display's marks too", marks(), "35@70.0 lit 45@90.0 dim")
-local _, under, at, x = HUD.pips[1]:GetParent():GetPoint(1)
-check("B the combo points centered under the energy", tostring(under == HUD.energy) .. " " .. at .. " " .. x, "true BOTTOM 0")
+local point, over, at, x = HUD.pips[1]:GetParent():GetPoint(1)
+check("B the combo points centered over the energy", point .. " " .. tostring(over == HUD.energy) .. " " .. at .. " " .. x, "BOTTOM true TOP 0")
 check("B at the game's scale for them on a nameplate", HUD.pips[1]:GetParent():GetScale(), 0.7)
 check("B five of them", #HUD.pips, 5)
 print("-- B2 the game's own look (the personal resource display's)")

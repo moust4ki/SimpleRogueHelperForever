@@ -26,8 +26,8 @@ SRH.L = {
     MARKS_NO_DISPLAY = "The game's personal resource display isn't there: turn it on in Edit Mode.",
     MARKS_NO_SPELL = "No spell of yours costs energy.",
     TIP_MARKS_SPELL = "A mark on the energy bar at this spell's cost, lit once you have enough energy.",
-    -- Under the target's health bar (TargetHud.lua)
-    HUD_OPTION = "Under the target's health bar: energy, marks and combo points",
-    TIP_HUD = "Your energy, with its marks, and your combo points, right under the health bar above your target (its nameplate): everything in one place. Shown for an enemy you target whose nameplate is shown, under its cast bar.",
+    -- Above the target's health bar (TargetHud.lua)
+    HUD_OPTION = "Above the target's health bar: combo points, energy and marks",
+    TIP_HUD = "Your combo points and your energy, with its marks, right above the health bar of your target (its nameplate): everything in one place. Shown for an enemy you target whose nameplate is shown.",
     HUD_NO_NAMEPLATES = "The enemy nameplates are hidden: turn them on in the game's options (%s).",
 }

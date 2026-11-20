@@ -21,8 +21,8 @@ SRH.LOCALES.frFR = {
     MARKS_NO_DISPLAY = "La barre de ressources personnelle du jeu n'est pas là : activez-la dans le mode Édition.",
     MARKS_NO_SPELL = "Aucun de vos sorts ne coûte d'énergie.",
     TIP_MARKS_SPELL = "Un trait sur la barre d'énergie au coût de ce sort, allumé dès que vous avez assez d'énergie.",
-    -- Under the target's health bar (TargetHud.lua)
-    HUD_OPTION = "Sous la barre de vie de la cible : énergie, traits et points de combo",
-    TIP_HUD = "Votre énergie, avec ses traits, et vos points de combo, juste sous la barre de vie au-dessus de votre cible (sa barre de nom) : tout au même endroit. Affiché pour un ennemi ciblé dont la barre de nom est visible, sous sa barre d'incantation.",
+    -- Above the target's health bar (TargetHud.lua)
+    HUD_OPTION = "Au-dessus de la barre de vie de la cible : points de combo, énergie et traits",
+    TIP_HUD = "Vos points de combo et votre énergie, avec ses traits, juste au-dessus de la barre de vie de votre cible (sa barre de nom) : tout au même endroit. Affiché pour un ennemi ciblé dont la barre de nom est visible.",
     HUD_NO_NAMEPLATES = "Les barres de nom des ennemis sont masquées : activez-les dans les options du jeu (%s).",
 }

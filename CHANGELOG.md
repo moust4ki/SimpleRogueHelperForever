@@ -4,14 +4,15 @@
 
 **After this update, quit and restart the game**: it adds a file, which a /reload doesn't load.
 
-- **Everything under the target's health bar** (asked, an option, off by default: the first row of the
-  `/srh` window): on the nameplate of the enemy you target, a thin energy bar with the same marks, and
-  your combo points centered under it, drawn with the game's own art (the personal resource
-  display's energy bar and the rogue's combo points). Energy, combo points and the enemy's health in
-  one place: no more looking back and forth between the enemy and the personal resource display. It
-  sits under the enemy's cast bar, never over it. Shown for an enemy you target whose nameplate is shown (the
+- **Everything above the target's health bar** (asked, an option, off by default: the first row of
+  the `/srh` window): on the nameplate of the enemy you target, from the top, your combo points
+  centered, then an energy bar with the same marks, right on the enemy's health bar, drawn with the
+  game's own art (the personal resource display's energy bar and the rogue's combo points, at the
+  scale the game gives them on a nameplate). Combo points, energy and the enemy's health in one
+  place, clear of the character under the nameplate: no more looking back and forth between the enemy
+  and the personal resource display. Shown for an enemy you target whose nameplate is shown (the
   window tells you when the game's enemy nameplates are off). In combat too, where the game hides the
-  values from addons.
+  values from addons. The target's debuffs, shown above its health bar, may lie over them.
 - The window no longer asks for the personal resource display while this option is on.
 
 ## 1.0.0

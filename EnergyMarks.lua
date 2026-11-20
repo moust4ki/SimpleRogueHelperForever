@@ -6,7 +6,7 @@ local L = SRH.L
 -- gets a thin mark at the energy each chosen spell costs (the game's cost:
 -- a talent that lowers it moves it), dim below it, lit once there is
 -- enough energy to cast it. Chosen per character (the addon's window). The
--- same marks on the energy bar under the target's health bar (an option,
+-- same marks on the energy bar above the target's health bar (an option,
 -- TargetHud.lua). In
 -- combat the game may hide power from addons (secret values): the marks are
 -- placed out of it when they can't be in it (the maximum and the costs
@@ -117,7 +117,7 @@ local function litCurve(cost, max)
 end
 
 -- The bars the marks go on (hosts): the personal resource display's
--- (EM.prd), and the one under the target's health bar (TargetHud.lua, an
+-- (EM.prd), and the one above the target's health bar (TargetHud.lua, an
 -- option). getBar() gives the bar, nil when there is none now. A host with
 -- a `height` (the bar's, its own) places each mark where a hidden status
 -- bar of the mark, from 0 to the maximum, ends at the cost: no size read
@@ -261,7 +261,7 @@ function EM:Rows(b)
         b.info(L.MARKS_ROGUE_ONLY)
         return
     end
-    -- First, the option: the marks under the target's health bar too
+    -- First, the option: the marks above the target's health bar too
     local hud = SRH.TargetHud
     if hud then hud:Rows(b) end
     if not powerBar() and not (hud and hud:Enabled()) then b.info(L.MARKS_NO_DISPLAY) end

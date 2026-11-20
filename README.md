@@ -20,18 +20,21 @@ have enough energy to cast it.
   (placed again after the fight) and are lit by the game itself, through `UnitPowerPercent` and a
   step colour curve; if that isn't available, from the energy, else they stay dim.
 
-## Everything under the target's health bar (option)
+## Everything above the target's health bar (option)
 
-Tick **Under the target's health bar: energy, marks and combo points**, the first row of the window
-(off by default). On the nameplate of the enemy you target, under its cast bar (never over it: a cast
-to kick stays in sight), an energy bar with the same marks, and your combo points, centered under
-it, drawn with the game's own art (the personal resource display's energy bar and the rogue's combo
-points). Your energy, your combo points and the enemy's health are then in one place, where the eye
-already is: no more looking back and forth between the enemy and the personal resource display,
+Tick **Above the target's health bar: combo points, energy and marks**, the first row of the window
+(off by default). On the nameplate of the enemy you target, from the top: your combo points,
+centered, then an energy bar with the same marks, right on the enemy's health bar and as wide,
+drawn with the game's own art (the personal resource display's energy bar and the rogue's combo
+points, at the scale the game gives them on a nameplate). Your combo points, your energy and the
+enemy's health are then in one place, where the eye already is, clear of the character under the
+nameplate: no more looking back and forth between the enemy and the personal resource display,
 which you can hide.
 
 - Shown for an enemy you target whose nameplate is shown (turn on the game's enemy nameplates); hidden
   otherwise (no target, a friend, the enemy too far or off screen).
+- The target's debuffs, which the game shows above its health bar, may lie over the combo points and
+  the energy.
 - In combat too: the energy and the combo points go to the bars as the game gives them, hidden from
   addons or not, and the marks are lit as on the personal resource display.
 
@@ -88,7 +91,7 @@ load.
 - `Locales/*.lua`: the texts (English first, each language over it), loaded before `Core.lua`
 - `Core.lua`: languages, saved variables, the combat message
 - `EnergyMarks.lua`: the marks
-- `TargetHud.lua`: the energy and combo points under the target's health bar (the option)
+- `TargetHud.lua`: the combo points and energy above the target's health bar (the option)
 - `Window.lua`: the settings window, its gamepad bindings, its page in the game's options, `/srh`
 - `tools/`: the release zip and the CurseForge upload (see *Releases*); `docs/curseforge.md`: the
   CurseForge page
@@ -108,7 +111,7 @@ D:\Dev\ControllerKeyboard-tests\venv\Scripts\python.exe tests\run_all.py
 - `t03_locales.py`: the same keys and codes in every language, the TOC
 - `t04_globals.py`: no global beyond the game's needs, none of the game's replaced, nothing of Easy
   Controller - Forever's
-- `t05_target_hud.py`: under the target's health bar (off at first, under the cast bar, the target
+- `t05_target_hud.py`: above the target's health bar (off at first, on the health bar, the target
   changing, combat with the values hidden, per character)
 
 Each test's output is written to `tests/out/`.

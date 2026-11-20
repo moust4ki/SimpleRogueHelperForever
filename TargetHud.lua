@@ -1,12 +1,13 @@
 local _, SRH = ...
 local L = SRH.L
 
--- Under the target's health bar (an option, the window, off at first): on
--- the enemy's own nameplate, the energy, with its marks (EnergyMarks.lua),
--- and the combo points centered under it, all in the one place the eye
--- already is, drawn with the game's own art (the personal resource
--- display's). It sits under the nameplate's cast bar, never over it (a cast
--- to kick). It works in combat too, where the game may hide these values
+-- Above the target's health bar (an option, the window, off at first): on
+-- the enemy's own nameplate, from the top, the combo points, then the
+-- energy with its marks (EnergyMarks.lua), right on the health bar, all in
+-- the one place the eye already is, drawn with the game's own art (the
+-- personal resource display's), clear of the character under the nameplate
+-- (the target's debuffs, shown above its health bar, may lie over them:
+-- chosen so). It works in combat too, where the game may hide these values
 -- from addons: they go straight to status bars, which show them without
 -- the addon reading them, and no size is read (the nameplate may keep its
 -- own from addons). A combo point is a bar of its own from i - 1 to i: full
@@ -55,7 +56,7 @@ function HUD:SetEnabled(on)
 end
 
 ---------------------------------------------------------------------------
--- The frame: the energy bar, the combo points centered under it
+-- The frame: the energy bar, the combo points centered over it
 ---------------------------------------------------------------------------
 local function plainBar(parent, r, g, b)
     local bar = CreateFrame("StatusBar", nil, parent)
@@ -134,14 +135,15 @@ function HUD:Build()
     f:Hide()
     self.frame = f
     self.energy = energyBar(f, art)
-    self.energy:SetPoint("TOPLEFT")
-    self.energy:SetPoint("TOPRIGHT")
+    self.energy:SetPoint("BOTTOMLEFT")
+    self.energy:SetPoint("BOTTOMRIGHT")
     self.energy:SetHeight(BAR_H)
-    -- (its offset in its own scale: clear of the energy frame's shadow)
+    -- The combo points over it (the offset in their own scale: clear of the
+    -- energy frame, which reaches 3 above the bar, their shadow under them)
     local row = CreateFrame("Frame", nil, f)
     row:SetScale(PIP_SCALE)
     row:SetSize(PIPS * PIP + (PIPS - 1) * PIP_GAP, PIP)
-    row:SetPoint("TOP", self.energy, "BOTTOM", 0, -12)
+    row:SetPoint("BOTTOM", self.energy, "TOP", 0, 10)
     self.pips = {}
     for i = 1, PIPS do self.pips[i] = comboPoint(row, i, art) end
     -- The marks, on its energy bar while the option is on
@@ -149,9 +151,9 @@ function HUD:Build()
 end
 
 ---------------------------------------------------------------------------
--- Where it goes: the target's nameplate, under its cast bar. Nothing to
--- show it on (no enemy targeted, its nameplate not shown, not a rogue, the
--- option off): hidden
+-- Where it goes: the target's nameplate, on its health bar, as wide. Nothing
+-- to show it on (no enemy targeted, its nameplate not shown, not a rogue,
+-- the option off): hidden
 ---------------------------------------------------------------------------
 local function targetPlate()
     local get = C_NamePlate and C_NamePlate.GetNamePlateForUnit
@@ -171,17 +173,17 @@ function HUD:Attach()
         f:Hide()
         return
     end
-    local cast = plate.UnitFrame and plate.UnitFrame.CastBarsContainer
+    local health = plate.UnitFrame and plate.UnitFrame.HealthBarsContainer
     f:SetParent(plate)
     f:ClearAllPoints()
-    -- (the energy bar's frame reaches 3 above it)
-    if cast then
-        f:SetPoint("TOPLEFT", cast, "BOTTOMLEFT", 0, -4)
-        f:SetPoint("TOPRIGHT", cast, "BOTTOMRIGHT", 0, -4)
+    -- (as the personal resource display stacks its bars: 6 apart)
+    if health then
+        f:SetPoint("BOTTOMLEFT", health, "TOPLEFT", 0, 6)
+        f:SetPoint("BOTTOMRIGHT", health, "TOPRIGHT", 0, 6)
     else
-        -- (a nameplate made otherwise: under it, as wide as its bars)
-        f:SetPoint("TOPLEFT", plate, "BOTTOMLEFT", 12, -4)
-        f:SetPoint("TOPRIGHT", plate, "BOTTOMRIGHT", -12, -4)
+        -- (a nameplate made otherwise: over it, as wide as its bars)
+        f:SetPoint("BOTTOMLEFT", plate, "TOPLEFT", 12, 6)
+        f:SetPoint("BOTTOMRIGHT", plate, "TOPRIGHT", -12, 6)
     end
     f:Show()
     self:Update()

@@ -34,7 +34,7 @@ BINDING_NAME_SIMPLEROGUEHELPER_TOGGLE = L.BINDING_TOGGLE
 ---------------------------------------------------------------------------
 -- Saved variables: this character's (SavedVariablesPerCharacter), there
 -- at ADDON_LOADED. { marks = { [spell name] = true }, hud = the marks and
--- combo points under the target's health bar (off at first) }; a file
+-- combo points above the target's health bar (off at first) }; a file
 -- edited by hand: what isn't of its kind is started again
 ---------------------------------------------------------------------------
 function SRH:InitDB()
