@@ -13,6 +13,7 @@ SRH.LOCALES.deDE = {
     V_UNCHECK = "Abwählen",
     V_CLOSE = "Schließen",
     V_PAGE = "Seite",
+    V_CHANGE = "Ändern",
     -- Energy marks (EnergyMarks.lua)
     SEC_MARKS = "Marken",
     TIP_SEC_MARKS = "Schurken: auf der persönlichen Ressourcenanzeige des Spiels (im Bearbeitungsmodus einschalten) eine feine Marke auf dem Energiebalken bei den Kosten jedes gewählten Zaubers (die Kosten des Spiels: ein Talent, das sie senkt, verschiebt sie), schwach darunter, hell, sobald du genug Energie hast. Pro Charakter gewählt.",
@@ -21,8 +22,16 @@ SRH.LOCALES.deDE = {
     MARKS_NO_DISPLAY = "Die persönliche Ressourcenanzeige des Spiels ist nicht da: Schalte sie im Bearbeitungsmodus ein.",
     MARKS_NO_SPELL = "Keiner deiner Zauber kostet Energie.",
     TIP_MARKS_SPELL = "Eine Marke auf dem Energiebalken bei den Kosten dieses Zaubers, hell, sobald du genug Energie hast.",
-    -- Above the target's health bar (TargetHud.lua)
-    HUD_OPTION = "Über dem Lebensbalken des Ziels: Combopunkte, Energie und Marken",
-    TIP_HUD = "Deine Combopunkte und deine Energie mit ihren Marken direkt über dem Lebensbalken deines Ziels (seiner Namensplakette): alles an einem Ort. Angezeigt für einen anvisierten Feind, dessen Namensplakette sichtbar ist.",
+    -- On the target's health bar (TargetHud.lua)
+    HUD_OPTION = "Am Lebensbalken des Ziels: Combopunkte, Energie und Marken",
+    TIP_HUD = "Deine Combopunkte und deine Energie mit ihren Marken direkt am Lebensbalken deines Ziels (seiner Namensplakette), darüber oder darunter nach deiner Wahl: alles an einem Ort. Angezeigt für einen anvisierten Feind, dessen Namensplakette sichtbar ist.",
     HUD_NO_NAMEPLATES = "Die Namensplaketten der Feinde sind ausgeblendet: Schalte sie in den Optionen des Spiels ein (%s).",
+    HUD_POSITION = "Platz",
+    TIP_HUD_POSITION = "Über dem Lebensbalken des Ziels (die Combopunkte oben) oder darunter (zuerst die Energie). Darunter erscheint auch der Zauberbalken des Feindes: Vergrößere den Abstand, um ihn im Blick zu behalten.",
+    HUD_ABOVE = "Darüber",
+    HUD_BELOW = "Darunter",
+    HUD_GAP = "Abstand",
+    TIP_HUD_GAP = "Der Abstand zwischen dem Lebensbalken des Ziels und deiner Energie.",
+    HUD_SCALE = "Größe",
+    TIP_HUD_SCALE = "Die Größe der Combopunkte und die Dicke des Energiebalkens (so breit wie der Lebensbalken, egal welche Größe).",
 }

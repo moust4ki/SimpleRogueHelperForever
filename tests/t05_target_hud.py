@@ -133,6 +133,65 @@ tap("PAD1")
 check("F off: told again", W.infos[1], L.MARKS_NO_DISPLAY)
 PersonalResourceDisplayFrame = keepPrd
 tap("PAD2")
+
+section("H  its choices: place, spacing, size")
+local db = SimpleRogueHelperCharDB
+check("H at first: above, 6 away, 100 %", db.hudPos .. " " .. db.hudGap .. " " .. db.hudScale, "above 6 1")
+W:Open()
+check("H the option off: no choice in the window", W.checks[2].id, "em_Éviscération")
+tap("PAD1")
+local ids = {} for i = 1, 4 do ids[i] = W.checks[i].id end
+check("H on: its choices under it", table.concat(ids, " "), "hud hudPos hudGap hudScale")
+local rows = W.frame.rows
+check("H shown as values", rows[2].value.text .. " | " .. rows[3].value.text .. " | " .. rows[4].value.text,
+  "< " .. L.HUD_ABOVE .. " > | < 6 > | < 100 % >")
+check("H (no box on them)", tostring(rows[2].box.shown) .. " " .. tostring(rows[1].box.shown), "false true")
+TARGET, PLATES.target = { enemy = true }, newPlate("plate5") fire("PLAYER_TARGET_CHANGED")
+local health = PLATES.target.UnitFrame.HealthBarsContainer
+tap("PADDDOWN")
+check("H on the place: the help bar says D-pad left / right change it", W.frame.help.text:find(L.V_CHANGE, 1, true) ~= nil, true)
+check("H (and its tip)", W.frame.tip.text, L.TIP_HUD_POSITION)
+tap("PADDRIGHT")
+check("H D-pad right: below", db.hudPos .. " " .. rows[2].value.text, "below < " .. L.HUD_BELOW .. " >")
+local p = { HUD.frame:GetPoint(1) }
+check("H under the health bar, 6 away", p[1] .. ">" .. p[3] .. " " .. p[5] .. " " .. tostring(p[2] == health), "TOPLEFT>BOTTOMLEFT -6 true")
+local e1, r1 = { HUD.energy:GetPoint(1) }, { HUD.row:GetPoint(1) }
+check("H the energy first, the combo points under it", e1[1] .. " | " .. r1[1] .. ">" .. r1[3], "TOPLEFT | TOP>BOTTOM")
+check("H (the D-pad didn't turn the page)", W:Page(), 1)
+tap("PADDRIGHT")
+check("H right again: above (two places, round)", db.hudPos, "above")
+p = { HUD.frame:GetPoint(1) }
+r1 = { HUD.row:GetPoint(1) }
+check("H back on the health bar, the combo points on top", p[1] .. ">" .. p[3] .. " " .. p[5] .. " | " .. r1[1] .. ">" .. r1[3], "BOTTOMLEFT>TOPLEFT 6 | BOTTOM>TOP")
+tap("PADDDOWN") tap("PADDRIGHT") tap("PADDRIGHT")
+check("H spacing: +2, +2", db.hudGap .. " " .. rows[3].value.text .. " " .. select(5, HUD.frame:GetPoint(1)), "10 < 10 > 10")
+for _ = 1, 10 do tap("PADDLEFT") end
+check("H down to 0, no further", db.hudGap, 0)
+tap("PAD1")
+check("H A: the next one", db.hudGap, 2)
+db.hudGap = 30 tap("PAD1")
+check("H A past the last: the first", db.hudGap, 0)
+db.hudGap = 6 HUD:Attach()
+tap("PADDDOWN") tap("PADDRIGHT")
+check("H size: 110 %", rows[4].value.text .. " " .. HUD.frame:GetScale(), "< 110 % > 1.1")
+check("H the space the same whatever the size (in its own scale)", string.format("%.3f", select(5, HUD.frame:GetPoint(1))), string.format("%.3f", 6 / 1.1))
+check("H as wide as the health bar still", select(2, HUD.frame:GetPoint(2)) == health, true)
+for _ = 1, 10 do tap("PADDRIGHT") end
+check("H up to 150 %, no further", rows[4].value.text, "< 150 % >")
+for _ = 1, 20 do tap("PADDLEFT") end
+check("H down to 50 %", rows[4].value.text .. " " .. HUD.frame:GetScale(), "< 50 % > 0.5")
+rows[4].scripts.OnClick(rows[4], "LeftButton")
+check("H a click: the next one", rows[4].value.text, "< 60 % >")
+rows[4].scripts.OnClick(rows[4], "RightButton")
+check("H a right click: the one before", rows[4].value.text, "< 50 % >")
+rows[4].scripts.OnMouseWheel(rows[4], 1)
+check("H the wheel over it: up", rows[4].value.text, "< 60 % >")
+for _ = 1, 9 do tap("PADDRIGHT") end
+check("H (no drift of the decimals: 150 % on the dot)", db.hudScale == 1.5, true)
+rows[2].scripts.OnMouseWheel(rows[2], -1)
+check("H the wheel over the place: changed", db.hudPos, "below")
+check("H the marks still there, the combo points too", hudMarks() .. " | " .. hud(), "35@0.35 lit 45@0.45 lit | on plate5, energy 50/100, combo 1")
+tap("PAD2")
 ''')
 
 # Saved per character: on at the next login, an enemy already targeted
@@ -147,7 +206,15 @@ plain = new_game(pre='C_Texture = nil SimpleRogueHelperCharDB = { hud = true } '
 plain.execute(r'''check("G a client without the game's art: plain bars, the same",
   hud() .. " | " .. tostring(NS.TargetHud.art) .. " " .. tostring(NS.TargetHud.energy.barTexture:find("WHITE8X8", 1, true) ~= nil),
   "on plate1, energy 40/100, combo 3 | false true")''')
-for g in (on, broken, plain):
+placed = new_game(pre='SimpleRogueHelperCharDB = { hud = true, hudPos = "below", hudGap = 10, hudScale = 1.2 } '
+                      'TARGET, PLATES.target = { enemy = true }, newPlate("plate1")')
+placed.execute(r'''local p = { NS.TargetHud.frame:GetPoint(1) }
+check("G the place, space and size chosen, at the next login", p[1] .. ">" .. p[3] .. " " .. string.format("%.2f", p[5]) .. " " .. NS.TargetHud.frame:GetScale(),
+  "TOPLEFT>BOTTOMLEFT -8.33 1.2")''')
+odd = new_game(pre='SimpleRogueHelperCharDB = { hud = true, hudPos = "left", hudGap = 99, hudScale = "big" }')
+odd.execute(r'''local db = SimpleRogueHelperCharDB
+check("G choices edited by hand: the defaults, no error", db.hudPos .. " " .. db.hudGap .. " " .. db.hudScale .. " " .. #errors, "above 6 1 0")''')
+for g in (on, broken, plain, placed, odd):
     g.execute("for _, e in ipairs(errors) do print('  ERR ' .. e) end")
     lua.execute("fails = fails + %d for i = 1, %d do errors[#errors + 1] = 'in another session (above)' end"
                 % (g.eval("fails"), g.eval("#errors")))

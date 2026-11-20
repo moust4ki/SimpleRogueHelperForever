@@ -56,6 +56,53 @@ function HUD:SetEnabled(on)
 end
 
 ---------------------------------------------------------------------------
+-- The player's choices (this character's): above or below the health bar,
+-- the space between them, the size (the energy bar's thickness and the
+-- combo points; as wide as the health bar whatever the size)
+---------------------------------------------------------------------------
+local CHOICES = {
+    hudPos = { values = { "above", "below" }, default = "above" },
+    hudGap = { min = 0, max = 30, step = 2, default = 6 },
+    hudScale = { min = 0.5, max = 1.5, step = 0.1, default = 1 },
+}
+HUD.CHOICES = CHOICES
+
+-- A saved file edited by hand: what isn't one of the choices, the default
+function HUD:CleanSettings(db)
+    for key, c in pairs(CHOICES) do
+        local v, ok = db[key], false
+        if c.values then
+            for _, value in ipairs(c.values) do ok = ok or v == value end
+        else
+            ok = type(v) == "number" and v >= c.min and v <= c.max
+        end
+        if not ok then db[key] = c.default end
+    end
+end
+
+-- The next value (delta 1) or the one before (-1); `wrap`: past the last,
+-- the first again (A, a click), else it stays there (the D-pad)
+function HUD:Step(key, delta, wrap)
+    local c, db = CHOICES[key], SRH.db
+    if c.values then
+        local n, i = #c.values, 1
+        for j, value in ipairs(c.values) do
+            if value == db[key] then i = j end
+        end
+        db[key] = c.values[(i - 1 + delta) % n + 1]
+    else
+        local count = math.floor((c.max - c.min) / c.step + 0.5)
+        local i = math.floor((db[key] - c.min) / c.step + 0.5) + delta
+        if wrap and i > count then i = 0 end
+        if wrap and i < 0 then i = count end
+        i = math.max(0, math.min(count, i))
+        -- (from the steps: no drift of the decimals)
+        db[key] = c.min + i * c.step
+    end
+    self:Attach()
+end
+
+---------------------------------------------------------------------------
 -- The frame: the energy bar, the combo points centered over it
 ---------------------------------------------------------------------------
 local function plainBar(parent, r, g, b)
@@ -135,25 +182,42 @@ function HUD:Build()
     f:Hide()
     self.frame = f
     self.energy = energyBar(f, art)
-    self.energy:SetPoint("BOTTOMLEFT")
-    self.energy:SetPoint("BOTTOMRIGHT")
     self.energy:SetHeight(BAR_H)
-    -- The combo points over it (the offset in their own scale: clear of the
-    -- energy frame, which reaches 3 above the bar, their shadow under them)
     local row = CreateFrame("Frame", nil, f)
     row:SetScale(PIP_SCALE)
     row:SetSize(PIPS * PIP + (PIPS - 1) * PIP_GAP, PIP)
-    row:SetPoint("BOTTOM", self.energy, "TOP", 0, 10)
+    self.row = row
     self.pips = {}
     for i = 1, PIPS do self.pips[i] = comboPoint(row, i, art) end
     -- The marks, on its energy bar while the option is on
     self.host = SRH.EnergyMarks:AddHost(function() return HUD:Enabled() and HUD.energy or nil end, BAR_H)
 end
 
+-- In the order the place chosen asks: above the health bar, the combo
+-- points over the energy, the energy on the health bar; below, the energy
+-- first, the combo points under it. (The combo points' offsets are in their
+-- own scale: clear of the energy frame, which reaches 3 above the bar and
+-- 7 under it, and of their shadow.)
+function HUD:Arrange()
+    local f, energy, row = self.frame, self.energy, self.row
+    f:SetScale(SRH.db.hudScale)
+    energy:ClearAllPoints()
+    row:ClearAllPoints()
+    if SRH.db.hudPos == "below" then
+        energy:SetPoint("TOPLEFT")
+        energy:SetPoint("TOPRIGHT")
+        row:SetPoint("TOP", energy, "BOTTOM", 0, -12)
+    else
+        energy:SetPoint("BOTTOMLEFT")
+        energy:SetPoint("BOTTOMRIGHT")
+        row:SetPoint("BOTTOM", energy, "TOP", 0, 10)
+    end
+end
+
 ---------------------------------------------------------------------------
--- Where it goes: the target's nameplate, on its health bar, as wide. Nothing
--- to show it on (no enemy targeted, its nameplate not shown, not a rogue,
--- the option off): hidden
+-- Where it goes: the target's nameplate, above or below its health bar as
+-- chosen, the space chosen away, as wide. Nothing to show it on (no enemy
+-- targeted, its nameplate not shown, not a rogue, the option off): hidden
 ---------------------------------------------------------------------------
 local function targetPlate()
     local get = C_NamePlate and C_NamePlate.GetNamePlateForUnit
@@ -173,17 +237,20 @@ function HUD:Attach()
         f:Hide()
         return
     end
+    self:Arrange()
     local health = plate.UnitFrame and plate.UnitFrame.HealthBarsContainer
+    -- (a nameplate made otherwise: its own bounds, as wide as its bars)
+    local to, inset = health or plate, health and 0 or 12
+    -- (the offset in the frame's own scale: the space chosen whatever the size)
+    local gap = SRH.db.hudGap / SRH.db.hudScale
     f:SetParent(plate)
     f:ClearAllPoints()
-    -- (as the personal resource display stacks its bars: 6 apart)
-    if health then
-        f:SetPoint("BOTTOMLEFT", health, "TOPLEFT", 0, 6)
-        f:SetPoint("BOTTOMRIGHT", health, "TOPRIGHT", 0, 6)
+    if SRH.db.hudPos == "below" then
+        f:SetPoint("TOPLEFT", to, "BOTTOMLEFT", inset, -gap)
+        f:SetPoint("TOPRIGHT", to, "BOTTOMRIGHT", -inset, -gap)
     else
-        -- (a nameplate made otherwise: over it, as wide as its bars)
-        f:SetPoint("BOTTOMLEFT", plate, "TOPLEFT", 12, 6)
-        f:SetPoint("BOTTOMRIGHT", plate, "TOPRIGHT", -12, 6)
+        f:SetPoint("BOTTOMLEFT", to, "TOPLEFT", inset, gap)
+        f:SetPoint("BOTTOMRIGHT", to, "TOPRIGHT", -inset, gap)
     end
     f:Show()
     self:Update()
@@ -209,14 +276,27 @@ function HUD:Update()
 end
 
 ---------------------------------------------------------------------------
--- The window's row (EnergyMarks' rows, first): the option, and why nothing
--- shows when the game's enemy nameplates are off
+-- The window's rows (EnergyMarks' rows, first): the option, while it is on
+-- its choices (b.value{ id, label, tip, text, step }), and why nothing shows
+-- when the game's enemy nameplates are off
 ---------------------------------------------------------------------------
+local function choiceRow(b, key, label, tip, text)
+    b.value({ id = key, label = label, tip = tip, text = text,
+        step = function(delta, wrap) HUD:Step(key, delta, wrap) end })
+end
+
 function HUD:Rows(b)
     b.check({ id = "hud", label = L.HUD_OPTION, tip = L.TIP_HUD,
         get = function() return HUD:Enabled() end,
         set = function(v) HUD:SetEnabled(v) end })
-    if self:Enabled() and GetCVarBool and not GetCVarBool("nameplateShowEnemies") then
+    if not self:Enabled() then return end
+    local db = SRH.db
+    choiceRow(b, "hudPos", L.HUD_POSITION, L.TIP_HUD_POSITION,
+        function() return db.hudPos == "below" and L.HUD_BELOW or L.HUD_ABOVE end)
+    choiceRow(b, "hudGap", L.HUD_GAP, L.TIP_HUD_GAP, function() return format("%d", db.hudGap) end)
+    choiceRow(b, "hudScale", L.HUD_SCALE, L.TIP_HUD_SCALE,
+        function() return format("%d %%", math.floor(db.hudScale * 100 + 0.5)) end)
+    if GetCVarBool and not GetCVarBool("nameplateShowEnemies") then
         b.info(format(L.HUD_NO_NAMEPLATES, NAMEPLATE_OPTIONS_LABEL or "Nameplates"))
     end
 end

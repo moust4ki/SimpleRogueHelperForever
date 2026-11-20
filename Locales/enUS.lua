@@ -18,6 +18,7 @@ SRH.L = {
     V_UNCHECK = "Uncheck",
     V_CLOSE = "Close",
     V_PAGE = "Page",
+    V_CHANGE = "Change",
     -- Energy marks (EnergyMarks.lua)
     SEC_MARKS = "Energy marks",
     TIP_SEC_MARKS = "Rogues: on the game's personal resource display (turn it on in Edit Mode), a thin mark on the energy bar at the energy each chosen spell costs (the game's cost: a talent that lowers it moves it), dim below it, lit once you have enough energy to cast it. Chosen per character.",
@@ -26,8 +27,16 @@ SRH.L = {
     MARKS_NO_DISPLAY = "The game's personal resource display isn't there: turn it on in Edit Mode.",
     MARKS_NO_SPELL = "No spell of yours costs energy.",
     TIP_MARKS_SPELL = "A mark on the energy bar at this spell's cost, lit once you have enough energy.",
-    -- Above the target's health bar (TargetHud.lua)
-    HUD_OPTION = "Above the target's health bar: combo points, energy and marks",
-    TIP_HUD = "Your combo points and your energy, with its marks, right above the health bar of your target (its nameplate): everything in one place. Shown for an enemy you target whose nameplate is shown.",
+    -- On the target's health bar (TargetHud.lua)
+    HUD_OPTION = "On the target's health bar: combo points, energy and marks",
+    TIP_HUD = "Your combo points and your energy, with its marks, right on the health bar of your target (its nameplate), above or below it as you choose: everything in one place. Shown for an enemy you target whose nameplate is shown.",
     HUD_NO_NAMEPLATES = "The enemy nameplates are hidden: turn them on in the game's options (%s).",
+    HUD_POSITION = "Place",
+    TIP_HUD_POSITION = "Above the target's health bar (the combo points on top), or below it (the energy first). Below, the enemy's cast bar shows there too: widen the spacing to keep it in sight.",
+    HUD_ABOVE = "Above",
+    HUD_BELOW = "Below",
+    HUD_GAP = "Spacing",
+    TIP_HUD_GAP = "The space between the target's health bar and your energy.",
+    HUD_SCALE = "Size",
+    TIP_HUD_SCALE = "The size of the combo points and the thickness of the energy bar (as wide as the health bar whatever the size).",
 }

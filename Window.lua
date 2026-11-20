@@ -2,10 +2,11 @@ local _, SRH = ...
 local L = SRH.L
 
 -- The addon's settings window (/srh, its key binding, Escape > Options >
--- AddOns): this character's energy spells, each marked or not
--- (EnergyMarks.lua gives the rows). Driven with the gamepad (D-pad up /
--- down: move, A: check, B: close, LB / RB or D-pad left / right: page) or
--- the mouse. As Easy Controller - Forever's panel it is our own frame, never
+-- AddOns): this character's energy spells, each marked or not, and the
+-- option of the target's health bar with its choices (EnergyMarks.lua and
+-- TargetHud.lua give the rows). Driven with the gamepad (D-pad up / down:
+-- move, A: check, B: close, LB / RB or D-pad left / right: page; on a
+-- value, D-pad left / right change it) or the mouse. As Easy Controller - Forever's panel it is our own frame, never
 -- a game panel: while it is shown the pad is bound to hidden buttons of
 -- ours, out of combat only (a button held when it opens: once released),
 -- and let go when it hides. A fight closes it.
@@ -25,17 +26,21 @@ local NAV = {
 }
 -- Held triggers may add modifiers to the keys
 local PREFIXES = { "", "SHIFT-", "CTRL-", "ALT-", "CTRL-SHIFT-", "ALT-SHIFT-", "ALT-CTRL-", "ALT-CTRL-SHIFT-" }
-local REPEAT = { UP = true, DOWN = true }
+local REPEAT = { UP = true, DOWN = true, LEFT = true, RIGHT = true }
 local BUTTON = "SimpleRogueHelperPad"
 W.NAV, W.BUTTON = NAV, BUTTON
 
--- The help bar's buttons: the game's own icons when this client has them
+-- The help bar's buttons: the game's own icons when this client has them,
+-- else their names
 local GLYPHS = {
     A = { "Gamepad_Ltr_A_64", "Gamepad_Ltr_A_32" },
     B = { "Gamepad_Ltr_B_64", "Gamepad_Ltr_B_32" },
     LB = { "Gamepad_Ltr_LShoulder_64", "Gamepad_Gen_LShoulder_64" },
     RB = { "Gamepad_Ltr_RShoulder_64", "Gamepad_Gen_RShoulder_64" },
+    LEFT = { "Gamepad_Gen_Left_64", "Gamepad_Ltr_Left_64" },
+    RIGHT = { "Gamepad_Gen_Right_64", "Gamepad_Ltr_Right_64" },
 }
+local GLYPH_TEXT = { LEFT = "<", RIGHT = ">" }
 
 local function glyph(key)
     for _, name in ipairs(GLYPHS[key]) do
@@ -43,13 +48,15 @@ local function glyph(key)
             return format("|A:%s:16:16|a", name)
         end
     end
-    return "|cffffd100" .. key .. "|r"
+    return "|cffffd100" .. (GLYPH_TEXT[key] or key) .. "|r"
 end
 
 local function clamp(v, lo, hi) return math.max(lo, math.min(hi, v)) end
 
 ---------------------------------------------------------------------------
--- The rows: EnergyMarks' header, its notes, its checks (8 a page)
+-- The rows: EnergyMarks' header, its notes, its rows (8 a page): checks
+-- (get, set) and values (text, step(delta, wrap): D-pad left / right, A and
+-- clicks the next one)
 ---------------------------------------------------------------------------
 function W:Refresh()
     local keep = self.checks and self.checks[self.focus or 0] and self.checks[self.focus].id
@@ -58,6 +65,10 @@ function W:Refresh()
         header = function(text) header = header or text end,
         info = function(text) infos[#infos + 1] = text end,
         check = function(row) checks[#checks + 1] = row end,
+        value = function(row)
+            row.kind = "value"
+            checks[#checks + 1] = row
+        end,
     })
     self.header, self.infos, self.checks = header, infos, checks
     -- Back on the spell focused before, else the first
@@ -92,20 +103,29 @@ function W:StepPage(delta)
     self:Render()
 end
 
--- A (or a click): the focused spell marked, or not any more
-function W:Act(index)
+-- A (or a click): the focused spell marked, or not any more; a value, the
+-- next one (past the last, the first). `delta`: a value one way or the
+-- other, staying at its ends (the D-pad, a right click: back)
+function W:Act(index, delta)
     local row = self.checks[index or self.focus]
     if not row then return end
     self.focus = index or self.focus
-    row.set(not row.get())
-    -- (an option may change the notes above the rows)
+    if row.kind == "value" then
+        row.step(delta or 1, delta == nil)
+    elseif delta == nil then
+        row.set(not row.get())
+    end
+    -- (an option may change the notes and rows)
     self:Refresh()
     self:Render()
 end
 
 function W:Press(name)
+    local row = self.checks and self.checks[self.focus]
     if name == "UP" or name == "DOWN" then
         self:Move(name == "UP" and -1 or 1)
+    elseif (name == "LEFT" or name == "RIGHT") and row and row.kind == "value" then
+        self:Act(nil, name == "LEFT" and -1 or 1)
     elseif name == "LB" or name == "LEFT" or name == "RB" or name == "RIGHT" then
         self:StepPage((name == "LB" or name == "LEFT") and -1 or 1)
     elseif name == "A" then
@@ -168,13 +188,31 @@ local function newRow(f)
     row.label = text(row, "GameFontHighlight")
     row.label:SetPoint("LEFT", row.box, "RIGHT", 8, 0)
     row.label:SetPoint("RIGHT", -6, 0)
+    -- A value's: "< value >" on the right
+    row.value = text(row, "GameFontNormal")
+    row.value:SetJustifyH("RIGHT")
+    row.value:SetPoint("RIGHT", -8, 0)
     row:SetScript("OnEnter", function(self)
         if self.index and W.focus ~= self.index then
             W.focus = self.index
             W:Render()
         end
     end)
-    row:SetScript("OnClick", function(self) W:Act(self.index) end)
+    -- A click: A (a right click: a value back); the wheel over a value
+    -- changes it, over a spell turns the page
+    row:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+    row:SetScript("OnClick", function(self, button)
+        W:Act(self.index, button == "RightButton" and -1 or nil)
+    end)
+    row:EnableMouseWheel(true)
+    row:SetScript("OnMouseWheel", function(self, delta)
+        local c = self.index and W.checks[self.index]
+        if c and c.kind == "value" then
+            W:Act(self.index, delta > 0 and 1 or -1)
+        else
+            W:StepPage(delta > 0 and -1 or 1)
+        end
+    end)
     return row
 end
 
@@ -276,7 +314,21 @@ function W:Render()
             row:SetPoint("TOPLEFT", f, "TOPLEFT", PAD, y)
             y = y - ROW_H
             row.label:SetText(c.label)
-            row.check:SetShown(c.get() and true or false)
+            -- A value: no box, its value on the right, the label under the
+            -- option's (aligned with the labels of the checks)
+            local value = c.kind == "value"
+            row.box:SetShown(not value)
+            row.inner:SetShown(not value)
+            row.check:SetShown(not value and c.get() and true or false)
+            row.value:SetShown(value)
+            row.label:ClearAllPoints()
+            row.label:SetPoint("LEFT", row.box, "RIGHT", 8, 0)
+            if value then
+                row.value:SetText("< " .. c.text() .. " >")
+                row.label:SetPoint("RIGHT", row.value, "LEFT", -6, 0)
+            else
+                row.label:SetPoint("RIGHT", -6, 0)
+            end
             row.hl:SetShown(index == self.focus)
             row.bar:SetShown(index == self.focus)
         end
@@ -302,7 +354,9 @@ function W:Render()
 
     -- What the pad does here
     local hints = {}
-    if focused then
+    if focused and focused.kind == "value" then
+        hints[#hints + 1] = glyph("LEFT") .. glyph("RIGHT") .. " " .. L.V_CHANGE
+    elseif focused then
         hints[#hints + 1] = glyph("A") .. " " .. (focused.get() and L.V_UNCHECK or L.V_CHECK)
     end
     hints[#hints + 1] = glyph("B") .. " " .. L.V_CLOSE

@@ -13,6 +13,7 @@ SRH.LOCALES.esES = {
     V_UNCHECK = "Desmarcar",
     V_CLOSE = "Cerrar",
     V_PAGE = "Página",
+    V_CHANGE = "Cambiar",
     -- Energy marks (EnergyMarks.lua)
     SEC_MARKS = "Marcas",
     TIP_SEC_MARKS = "Pícaros: en la barra de recursos personal del juego (actívala en el modo de edición), una marca fina en la barra de energía al coste de cada hechizo elegido (el coste del juego: un talento que lo reduce la mueve), tenue por debajo, encendida en cuanto tienes energía para lanzarlo. Elegido por personaje.",
@@ -21,10 +22,18 @@ SRH.LOCALES.esES = {
     MARKS_NO_DISPLAY = "La barra de recursos personal del juego no está: actívala en el modo de edición.",
     MARKS_NO_SPELL = "Ninguno de tus hechizos cuesta energía.",
     TIP_MARKS_SPELL = "Una marca en la barra de energía al coste de este hechizo, encendida en cuanto tienes energía suficiente.",
-    -- Above the target's health bar (TargetHud.lua)
-    HUD_OPTION = "Sobre la barra de salud del objetivo: puntos de combo, energía y marcas",
-    TIP_HUD = "Tus puntos de combo y tu energía, con sus marcas, justo encima de la barra de salud de tu objetivo (su placa de nombre): todo en el mismo sitio. Se muestra para un enemigo seleccionado cuya placa de nombre es visible.",
+    -- On the target's health bar (TargetHud.lua)
+    HUD_OPTION = "En la barra de salud del objetivo: puntos de combo, energía y marcas",
+    TIP_HUD = "Tus puntos de combo y tu energía, con sus marcas, en la barra de salud de tu objetivo (su placa de nombre), encima o debajo según elijas: todo en el mismo sitio. Se muestra para un enemigo seleccionado cuya placa de nombre es visible.",
     HUD_NO_NAMEPLATES = "Las placas de nombre de los enemigos están ocultas: actívalas en las opciones del juego (%s).",
+    HUD_POSITION = "Lugar",
+    TIP_HUD_POSITION = "Encima de la barra de salud del objetivo (los puntos de combo arriba) o debajo (primero la energía). Debajo también aparece la barra de lanzamiento del enemigo: aumenta el espaciado para no perderla de vista.",
+    HUD_ABOVE = "Encima",
+    HUD_BELOW = "Debajo",
+    HUD_GAP = "Espaciado",
+    TIP_HUD_GAP = "El espacio entre la barra de salud del objetivo y tu energía.",
+    HUD_SCALE = "Tamaño",
+    TIP_HUD_SCALE = "El tamaño de los puntos de combo y el grosor de la barra de energía (tan ancha como la barra de salud, sea cual sea el tamaño).",
 }
 
 -- Latin American Spanish: the same

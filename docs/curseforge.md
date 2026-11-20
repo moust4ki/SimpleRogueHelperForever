@@ -17,8 +17,9 @@ have enough energy to cast it**. No more guessing whether that Eviscerate will g
 - **In combat too**: where the game hides power values from addons, the marks stay in place and are
   lit by the game itself.
 - **Everything on the enemy (option)**: your combo points and your energy, with its marks, right on
-  the health bar above your target, drawn like the personal resource display: no more looking back
-  and forth between the enemy and the personal resource display. Tick it first in the window (`/srh`).
+  your target's health bar, above or below it, at the spacing and size you choose, drawn like the
+  personal resource display: no more looking back and forth between the enemy and the personal
+  resource display. Tick it first in the window (`/srh`).
 - **Gamepad or mouse**: a small settings window driven with the D-pad, made for WoW Forever's
   gamepad play.
 - **Five languages**: English, French, German, Spanish and Italian.
