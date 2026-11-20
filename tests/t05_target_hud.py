@@ -43,6 +43,7 @@ check("B (a mark at the end of its own hidden bar)", tostring(rel == m.at:GetSta
 check("B the personal resource display's marks too", marks(), "35@70.0 lit 45@90.0 dim")
 local _, under, at, x = HUD.pips[1]:GetParent():GetPoint(1)
 check("B the combo points centered under the energy", tostring(under == HUD.energy) .. " " .. at .. " " .. x, "true BOTTOM 0")
+check("B at the game's scale for them on a nameplate", HUD.pips[1]:GetParent():GetScale(), 0.7)
 check("B five of them", #HUD.pips, 5)
 print("-- B2 the game's own look (the personal resource display's)")
 local e = HUD.energy

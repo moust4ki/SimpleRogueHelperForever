@@ -15,8 +15,9 @@ local HUD = {}
 SRH.TargetHud = HUD
 
 local ENERGY = Enum and Enum.PowerType and Enum.PowerType.Energy or 3
--- The combo points as the game draws them (20 x 20, 4 apart)
-local BAR_H, PIP, PIP_GAP, PIPS = 12, 20, 4, 5
+-- The combo points as the game draws them (20 x 20, 4 apart), at the scale
+-- it gives them on a nameplate (Retail's own, ClassNameplateBarRogueFrame)
+local BAR_H, PIP, PIP_GAP, PIPS, PIP_SCALE = 12, 20, 4, 5, 0.7
 local WHITE = "Interface\\Buttons\\WHITE8X8"
 local ROUND = "Interface\\CharacterFrame\\TempPortraitAlphaMask"
 local COMBO = { 1, 0.3, 0.15 }
@@ -129,16 +130,18 @@ function HUD:Build()
     local art = gameArt()
     self.art = art
     local f = CreateFrame("Frame", nil, UIParent)
-    f:SetHeight(BAR_H + 8 + PIP)
+    f:SetHeight(BAR_H + 8 + PIP * PIP_SCALE)
     f:Hide()
     self.frame = f
     self.energy = energyBar(f, art)
     self.energy:SetPoint("TOPLEFT")
     self.energy:SetPoint("TOPRIGHT")
     self.energy:SetHeight(BAR_H)
+    -- (its offset in its own scale: clear of the energy frame's shadow)
     local row = CreateFrame("Frame", nil, f)
+    row:SetScale(PIP_SCALE)
     row:SetSize(PIPS * PIP + (PIPS - 1) * PIP_GAP, PIP)
-    row:SetPoint("TOP", self.energy, "BOTTOM", 0, -8)
+    row:SetPoint("TOP", self.energy, "BOTTOM", 0, -12)
     self.pips = {}
     for i = 1, PIPS do self.pips[i] = comboPoint(row, i, art) end
     -- The marks, on its energy bar while the option is on

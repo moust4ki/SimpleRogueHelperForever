@@ -175,6 +175,8 @@ function M.SetAtlas(s, name, useSize)
   if info then s.w, s.h = info.width, info.height end
 end
 function M.SetStatusBarTexture(s, v) s.barTexture = v end
+function M.SetScale(s, v) s.scale = v end
+function M.GetScale(s) return s.scale or 1 end
 function M.RegisterForClicks(s, ...) s.clicks = { ... } end
 function M.HasFocus(s) return s.focus == true end
 function M.CreateMaskTexture(s) return mock("MaskTexture", nil, s) end
