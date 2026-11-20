@@ -21,4 +21,8 @@ SRH.LOCALES.itIT = {
     MARKS_NO_DISPLAY = "La barra delle risorse personali del gioco non c'è: attivala nella modalità modifica.",
     MARKS_NO_SPELL = "Nessun tuo incantesimo costa energia.",
     TIP_MARKS_SPELL = "Un segno sulla barra dell'energia al costo di questo incantesimo, acceso appena hai abbastanza energia.",
+    -- Under the target's health bar (TargetHud.lua)
+    HUD_OPTION = "Sotto la barra della salute del bersaglio: energia, segni e punti combo",
+    TIP_HUD = "La tua energia, con i suoi segni, e i tuoi punti combo, proprio sotto la barra della salute sopra il tuo bersaglio (la sua barra del nome): tutto nello stesso posto. Mostrato per un nemico selezionato con la barra del nome visibile, sotto la sua barra di lancio.",
+    HUD_NO_NAMEPLATES = "Le barre del nome dei nemici sono nascoste: attivale nelle opzioni del gioco (%s).",
 }

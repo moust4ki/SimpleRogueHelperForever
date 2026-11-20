@@ -33,13 +33,15 @@ BINDING_NAME_SIMPLEROGUEHELPER_TOGGLE = L.BINDING_TOGGLE
 
 ---------------------------------------------------------------------------
 -- Saved variables: this character's (SavedVariablesPerCharacter), there
--- at ADDON_LOADED. { marks = { [spell name] = true } }; a file edited by
--- hand: what isn't a table is started again
+-- at ADDON_LOADED. { marks = { [spell name] = true }, hud = the marks and
+-- combo points under the target's health bar (off at first) }; a file
+-- edited by hand: what isn't of its kind is started again
 ---------------------------------------------------------------------------
 function SRH:InitDB()
     if type(SimpleRogueHelperCharDB) ~= "table" then SimpleRogueHelperCharDB = {} end
     local db = SimpleRogueHelperCharDB
     if type(db.marks) ~= "table" then db.marks = {} end
+    if type(db.hud) ~= "boolean" then db.hud = false end
     db.version = 1
     self.db = db
 end

@@ -21,6 +21,10 @@ SRH.LOCALES.esES = {
     MARKS_NO_DISPLAY = "La barra de recursos personal del juego no está: actívala en el modo de edición.",
     MARKS_NO_SPELL = "Ninguno de tus hechizos cuesta energía.",
     TIP_MARKS_SPELL = "Una marca en la barra de energía al coste de este hechizo, encendida en cuanto tienes energía suficiente.",
+    -- Under the target's health bar (TargetHud.lua)
+    HUD_OPTION = "Bajo la barra de salud del objetivo: energía, marcas y puntos de combo",
+    TIP_HUD = "Tu energía, con sus marcas, y tus puntos de combo, justo bajo la barra de salud sobre tu objetivo (su placa de nombre): todo en el mismo sitio. Se muestra para un enemigo seleccionado cuya placa de nombre es visible, bajo su barra de lanzamiento.",
+    HUD_NO_NAMEPLATES = "Las placas de nombre de los enemigos están ocultas: actívalas en las opciones del juego (%s).",
 }
 
 -- Latin American Spanish: the same

@@ -21,4 +21,8 @@ SRH.LOCALES.deDE = {
     MARKS_NO_DISPLAY = "Die persönliche Ressourcenanzeige des Spiels ist nicht da: Schalte sie im Bearbeitungsmodus ein.",
     MARKS_NO_SPELL = "Keiner deiner Zauber kostet Energie.",
     TIP_MARKS_SPELL = "Eine Marke auf dem Energiebalken bei den Kosten dieses Zaubers, hell, sobald du genug Energie hast.",
+    -- Under the target's health bar (TargetHud.lua)
+    HUD_OPTION = "Unter dem Lebensbalken des Ziels: Energie, Marken und Combopunkte",
+    TIP_HUD = "Deine Energie mit ihren Marken und deine Combopunkte direkt unter dem Lebensbalken über deinem Ziel (seiner Namensplakette): alles an einem Ort. Angezeigt für einen anvisierten Feind, dessen Namensplakette sichtbar ist, unter seinem Zauberbalken.",
+    HUD_NO_NAMEPLATES = "Die Namensplaketten der Feinde sind ausgeblendet: Schalte sie in den Optionen des Spiels ein (%s).",
 }

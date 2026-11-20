@@ -98,6 +98,8 @@ function W:Act(index)
     if not row then return end
     self.focus = index or self.focus
     row.set(not row.get())
+    -- (an option may change the notes above the rows)
+    self:Refresh()
     self:Render()
 end
 

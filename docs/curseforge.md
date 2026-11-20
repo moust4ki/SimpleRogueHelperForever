@@ -16,6 +16,9 @@ have enough energy to cast it**. No more guessing whether that Eviscerate will g
   resize the bar in Edit Mode.
 - **In combat too**: where the game hides power values from addons, the marks stay in place and are
   lit by the game itself.
+- **Everything on the enemy (option)**: your energy, its marks and your combo points right under the
+  health bar above your target, under its cast bar: no more looking back and forth between the enemy
+  and the personal resource display. Tick it first in the window (`/srh`).
 - **Gamepad or mouse**: a small settings window driven with the D-pad, made for WoW Forever's
   gamepad play.
 - **Five languages**: English, French, German, Spanish and Italian.
@@ -37,7 +40,7 @@ The window closes when a fight starts, and doesn't open in combat.
 ## Installation
 
 Install with the CurseForge app, or extract the zip into
-`World of Warcraft/_classic_beta_/Interface/AddOns/`.
+`World of Warcraft/_forever_/Interface/AddOns/`.
 **Fully restart the game** after installing (a `/reload` does not load a new addon).
 
 ## Compatibility

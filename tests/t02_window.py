@@ -19,10 +19,11 @@ lua.execute(r'''
 local W, EM, L = NS.Window, NS.EnergyMarks, NS.L
 local PAD = "CLICK SimpleRogueHelperPad"
 local function ours(key) return binding(key):sub(1, #PAD) == PAD end
--- Eleven energy spells (two pages of 8), 25 to 75 energy
+-- The option of the target's health bar, then ten energy spells (11 rows:
+-- two pages of 8), 25 to 70 energy
 BOOK, COSTS = {}, {}
 for i, n in ipairs({ "Coup bas", "Suriner", "Attaque sournoise", "Éviscération", "Attaque pernicieuse", "Débiter",
-  "Exposer l'armure", "Garrot", "Rupture", "Embuscade", "Aiguillon perfide" }) do
+  "Exposer l'armure", "Garrot", "Rupture", "Embuscade" }) do
   BOOK[i] = { name = n, spellID = 100 + i, iconID = i, itemType = 1 }
   COSTS[100 + i] = 20 + 5 * i
 end
@@ -45,7 +46,8 @@ check("A with a trigger held (a modifier) too", ours("CTRL-PADDDOWN") and ours("
 check("A Escape: the window's", binding("ESCAPE"), PAD .. "ESCAPE:LeftButton")
 check("A X and Y stay the game's", binding("PAD3") .. " " .. binding("PAD4"), "GAME_PAD3 GAME_PAD4")
 check("A 8 keys x 8 modifiers, and Escape", numBindings(), 65)
-check("A the first spell focused, page 1", W.focus .. " " .. shownRows(), "1 1,2,3,4,5,6,7,8")
+check("A the first row focused (the option), page 1", W.focus .. " " .. shownRows(), "1 1,2,3,4,5,6,7,8")
+check("A (11 rows: the option, ten spells)", #W.checks .. " " .. W.checks[1].id, "11 hud")
 check("A the page shown", W.frame.pager.text, L.V_PAGE .. " 1 / 2")
 check("A the help bar: the game's icons", W.frame.help.text:find("|A:Gamepad_Ltr_A_64:16:16|a " .. L.V_CHECK, 1, true) ~= nil, true)
 
@@ -57,13 +59,18 @@ check("B up: the 3rd", W.focus, 3)
 for _ = 1, 5 do tap("PADDUP") end
 check("B up past the top: the first", W.focus, 1)
 tap("PAD1")
-check("B A: Cheap Shot marked", EM:Marked()["Coup bas"], true)
+check("B A on the option: on", SimpleRogueHelperCharDB.hud, true)
+tap("PAD1")
+check("B A again: off", SimpleRogueHelperCharDB.hud, false)
+tap("PADDDOWN") tap("PAD1")
+check("B down, A: Cheap Shot marked", EM:Marked()["Coup bas"], true)
 check("B its mark", marks(), "25@50.0 lit")
-check("B the row ticked", W.frame.rows[1].check.shown, true)
+check("B the row ticked", W.frame.rows[2].check.shown, true)
 check("B the help bar: A unchecks now", W.frame.help.text:find(L.V_UNCHECK, 1, true) ~= nil, true)
 tap("PAD1")
 check("B A again: unmarked", EM:Marked()["Coup bas"], nil)
 check("B (no mark)", marks(), "")
+tap("PADDUP")
 check("B the game got none of it", #gameActions, 0)
 print("-- B2 held: repeats")
 press("PADDDOWN")
@@ -91,7 +98,7 @@ check("C D-pad left: page 1", shownRows(), "1,2,3,4,5,6,7,8")
 for _ = 1, 20 do tap("PADDDOWN") end
 check("C down from page 1 goes on to page 2, the last spell at most", W.focus .. " " .. shownRows(), "11 9,10,11")
 tap("PAD1")
-check("C A there: the 11th marked", EM:Marked()["Aiguillon perfide"], true)
+check("C A there: the 10th spell marked", EM:Marked()["Embuscade"], true)
 tap("PAD1")
 
 section("D  B closes on its release, the pad let go")
@@ -150,9 +157,9 @@ local rows = W.frame.rows
 rows[2].scripts.OnEnter(rows[2])
 check("G over the 2nd row: focused", W.focus, 2)
 rows[2].scripts.OnClick(rows[2], "LeftButton")
-check("G clicked: Backstab marked", EM:Marked()["Suriner"], true)
+check("G clicked: Cheap Shot marked", EM:Marked()["Coup bas"], true)
 rows[2].scripts.OnClick(rows[2], "LeftButton")
-check("G clicked again: unmarked", EM:Marked()["Suriner"], nil)
+check("G clicked again: unmarked", EM:Marked()["Coup bas"], nil)
 W.frame.scripts.OnMouseWheel(W.frame, -1)
 check("G wheel down: page 2", shownRows(), "9,10,11")
 W.frame.prev.scripts.OnClick(W.frame.prev)
@@ -204,12 +211,12 @@ check("J the game's focus refreshed: the window's again", ours("PAD1"), true)
 ClearOverrideBindings(other)
 
 section("K  the spell book changes while it is open")
-W.frame.rows[3].scripts.OnEnter(W.frame.rows[3])
+W.frame.rows[4].scripts.OnEnter(W.frame.rows[4])
 check("K on Sneak Attack", W.checks[W.focus].id, "em_Attaque sournoise")
 table.insert(BOOK, 1, { name = "Sprint énergique", spellID = 200, iconID = 9, itemType = 1 })
 COSTS[200] = 10
 fire("SPELLS_CHANGED")
-check("K a new spell: listed first", #W.checks .. " " .. W.checks[1].id, "12 em_Sprint énergique")
+check("K a new spell: listed first, after the option", #W.checks .. " " .. W.checks[2].id, "12 em_Sprint énergique")
 check("K still on Sneak Attack", W.checks[W.focus].id, "em_Attaque sournoise")
 W:Close()
 

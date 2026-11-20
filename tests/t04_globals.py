@@ -22,7 +22,8 @@ EXPECTED = {
 OPTIONAL = {"SimpleRogueHelperCharDB", "PersonalResourceDisplayFrame", "ChatFrameUtil", "ChatEdit_GetActiveWindow",
             "GameMenuFrame", "SettingsPanel", "GamepadMode", "InterfaceOptions_AddCategory", "Settings",
             "EventRegistry", "C_CurveUtil", "UnitPowerPercent", "CreateColor", "C_Texture", "C_Spell", "C_SpellBook",
-            "UnitPowerType", "Enum", "UIErrorsFrame"}
+            "UnitPowerType", "Enum", "UIErrorsFrame", "C_NamePlate", "PowerBarColor", "GetComboPoints", "GetCVarBool",
+            "NAMEPLATE_OPTIONS_LABEL"}
 
 
 def names(lua, table):
@@ -31,7 +32,8 @@ def names(lua, table):
 
 def everything(lua):
     # All the addon does in a session: marks, the window (pad and mouse),
-    # the options, a fight, the key binding, the bar resized
+    # the option of the target's health bar, an enemy targeted, the options,
+    # a fight (the values hidden), the key binding, the bar resized
     lua.execute(r'''
     local W, EM = NS.Window, NS.EnergyMarks
     EM:SetMarked("Éviscération", true)
@@ -39,18 +41,25 @@ def everything(lua):
     bar.w = 300 if bar.hooks then bar.hooks.OnSizeChanged(bar) end
     fire("SPELLS_CHANGED") fire("PLAYER_TALENT_UPDATE") fire("CHARACTER_POINTS_CHANGED") fire("LEARNED_SPELL_IN_SKILL_LINE")
     slash("/srh") advance(0.2)
-    tap("PADDDOWN") tap("PAD1") tap("PADRSHOULDER") tap("PADLSHOULDER") tap("PADDLEFT") tap("PADDRIGHT")
+    tap("PADDDOWN") tap("PADDDOWN") tap("PAD1") tap("PADRSHOULDER") tap("PADLSHOULDER") tap("PADDLEFT") tap("PADDRIGHT")
     press("PADDUP") advance(0.5) release("PADDUP") tick()
     callback("Gamepad.RefreshFrameFocus") advance(0)
     W.frame.rows[1].scripts.OnEnter(W.frame.rows[1]) W.frame.rows[1].scripts.OnClick(W.frame.rows[1])
     W.frame.scripts.OnMouseWheel(W.frame, -1) W.frame.next.scripts.OnClick(W.frame.next)
     tap("PAD2")
+    TARGET, PLATES.target, COMBO = { enemy = true }, newPlate("plate1"), 2
+    fire("PLAYER_TARGET_CHANGED") fire("NAME_PLATE_UNIT_ADDED", "nameplate1") fire("UNIT_POWER_FREQUENT", "player")
+    fire("COMBO_TARGET_CHANGED")
     SimpleRogueHelper_ToggleWindow() advance(0.2)
     fire("PLAYER_REGEN_DISABLED") combat = true
     UnitPowerMax = function() error("secret") end fire("UNIT_MAXPOWER", "player")
+    UnitPower = function() return secret(ENERGY.now) end GetComboPoints = function() return secret(COMBO) end
+    PLATES.target = newPlate("plate2") fire("PLAYER_TARGET_CHANGED") fire("UNIT_POWER_FREQUENT", "player")
     slash("/srh") SimpleRogueHelper_ToggleWindow()
     UnitPowerMax = function() return ENERGY.max end
+    UnitPower = function() return ENERGY.now end GetComboPoints = function() return COMBO end
     combat = false fire("PLAYER_REGEN_ENABLED")
+    PLATES.target = nil fire("NAME_PLATE_UNIT_REMOVED", "nameplate2")
     local cat = categories[1]
     if cat then
       SettingsPanel.shown = true
@@ -83,12 +92,15 @@ lua.execute('section("C  a client without the optional parts: still no error")')
 bare = new_game(pre='''
 ChatFrameUtil = nil GameMenuFrame = nil SettingsPanel = nil GamepadMode = nil
 Settings = nil EventRegistry = nil C_CurveUtil = nil UnitPowerPercent = nil C_Texture = nil
+C_NamePlate = nil GetCVarBool = nil
 UNKNOWN_EVENTS = { TRAIT_CONFIG_UPDATED = true, PLAYER_TALENT_UPDATE = true, CHARACTER_POINTS_CHANGED = true,
-  LEARNED_SPELL_IN_SKILL_LINE = true }
+  LEARNED_SPELL_IN_SKILL_LINE = true, COMBO_TARGET_CHANGED = true, NAME_PLATE_UNIT_ADDED = true,
+  NAME_PLATE_UNIT_REMOVED = true }
 ''')
 everything(bare)
 bare.execute('check("C everything done again, no error", #errors, 0)')
-bare.execute('check("C the marks lit from the energy (no curves)", marks(), "45@135.0 lit")')
+bare.execute('check("C the marks lit from the energy (no curves)", marks(), "35@105.0 lit 45@135.0 lit")')
+bare.execute('check("C no nameplates from the game: nothing under the target", hud(), "hidden")')
 bare.execute('check("C the help bar\'s buttons as letters", NS.Window.frame.help.text:find("B|r", 1, true) ~= nil, true)')
 lua.execute("fails = fails + %d" % bare.eval("fails"))
 lua.execute("for i = 1, %d do errors[#errors + 1] = 'in the session without the optional parts (above)' end" % bare.eval("#errors"))

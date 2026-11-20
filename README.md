@@ -20,6 +20,20 @@ have enough energy to cast it.
   (placed again after the fight) and are lit by the game itself, through `UnitPowerPercent` and a
   step colour curve; if that isn't available, from the energy, else they stay dim.
 
+## Everything under the target's health bar (option)
+
+Tick **Under the target's health bar: energy, marks and combo points**, the first row of the window
+(off by default). On the nameplate of the enemy you target, under its cast bar (never over it: a cast
+to kick stays in sight), a thin energy bar with the same marks, and your combo points, centered under
+it. Your energy, your combo points and the enemy's health are then in one place, where the eye
+already is: no more looking back and forth between the enemy and the personal resource display,
+which you can hide.
+
+- Shown for an enemy you target whose nameplate is shown (turn on the game's enemy nameplates); hidden
+  otherwise (no target, a friend, the enemy too far or off screen).
+- In combat too: the energy and the combo points go to the bars as the game gives them, hidden from
+  addons or not, and the marks are lit as on the personal resource display.
+
 The addon stands alone: it works with or without Easy Controller - Forever, where it started as a
 test.
 
@@ -27,7 +41,7 @@ test.
 
 1. Download the repository (*Code > Download ZIP*) and extract it.
 2. Name the folder **`SimpleRogueHelperForever`** (exact name) and put it in
-   `World of Warcraft/_classic_beta_/Interface/AddOns/`.
+   `World of Warcraft/_forever_/Interface/AddOns/`.
 3. **Fully restart the game** after installing it or after an update that adds files (`/reload` does
    not load new files).
 
@@ -47,7 +61,7 @@ test.
 | Gamepad | Mouse | |
 | --- | --- | --- |
 | D-pad up / down | hover | Move (held: repeats) |
-| A | click a row | Check / uncheck the spell |
+| A | click a row | Check / uncheck (the option, a spell) |
 | B, Escape | the × button | Close |
 | LB / RB, D-pad left / right | wheel, `<` `>` | Previous / next page (8 spells a page) |
 
@@ -63,8 +77,9 @@ language. Spell names are the game's.
 
 ## Saved variables
 
-`SimpleRogueHelperCharDB`, per character: `{ marks = { ["Spell name"] = true } }`. A file edited by
-hand that holds anything else is cleaned at load.
+`SimpleRogueHelperCharDB`, per character: `{ marks = { ["Spell name"] = true }, hud = false }` (`hud`:
+the option of the target's health bar). A file edited by hand that holds anything else is cleaned at
+load.
 
 ## Development
 
@@ -72,6 +87,7 @@ hand that holds anything else is cleaned at load.
 - `Locales/*.lua`: the texts (English first, each language over it), loaded before `Core.lua`
 - `Core.lua`: languages, saved variables, the combat message
 - `EnergyMarks.lua`: the marks
+- `TargetHud.lua`: the energy and combo points under the target's health bar (the option)
 - `Window.lua`: the settings window, its gamepad bindings, its page in the game's options, `/srh`
 - `tools/`: the release zip and the CurseForge upload (see *Releases*); `docs/curseforge.md`: the
   CurseForge page
@@ -91,6 +107,8 @@ D:\Dev\ControllerKeyboard-tests\venv\Scripts\python.exe tests\run_all.py
 - `t03_locales.py`: the same keys and codes in every language, the TOC
 - `t04_globals.py`: no global beyond the game's needs, none of the game's replaced, nothing of Easy
   Controller - Forever's
+- `t05_target_hud.py`: under the target's health bar (off at first, under the cast bar, the target
+  changing, combat with the values hidden, per character)
 
 Each test's output is written to `tests/out/`.
 
@@ -119,7 +137,7 @@ To release a version:
 A directory junction makes the game load the repository itself (game closed, then a full restart):
 
 ```
-mklink /J "D:\Games\Battle.net\World of Warcraft\_classic_beta_\Interface\AddOns\SimpleRogueHelperForever" "D:\Dev\SimpleRogueHelperForever"
+mklink /J "D:\Games\Battle.net\World of Warcraft\_forever_\Interface\AddOns\SimpleRogueHelperForever" "D:\Dev\SimpleRogueHelperForever"
 ```
 
 **Never update the addon from the CurseForge app on an installation that uses a junction**: the app

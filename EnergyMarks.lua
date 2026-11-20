@@ -5,7 +5,9 @@ local L = SRH.L
 -- the game's personal resource display (Edit Mode), the rogue's energy bar
 -- gets a thin mark at the energy each chosen spell costs (the game's cost:
 -- a talent that lowers it moves it), dim below it, lit once there is
--- enough energy to cast it. Chosen per character (the addon's window). In
+-- enough energy to cast it. Chosen per character (the addon's window). The
+-- same marks on the energy bar under the target's health bar (an option,
+-- TargetHud.lua). In
 -- combat the game may hide power from addons (secret values): the marks are
 -- placed out of it when they can't be in it (the maximum and the costs
 -- change outside fights), and lit through the game's own UnitPowerPercent
@@ -114,28 +116,92 @@ local function litCurve(cost, max)
     return ok and curve or nil
 end
 
-function EM:Build(bar)
+-- The bars the marks go on (hosts): the personal resource display's
+-- (EM.prd), and the one under the target's health bar (TargetHud.lua, an
+-- option). getBar() gives the bar, nil when there is none now. A host with
+-- a `height` (the bar's, its own) places each mark where a hidden status
+-- bar of the mark, from 0 to the maximum, ends at the cost: no size read
+-- (the target's nameplate may keep it from addons, in combat too)
+local Host = {}
+Host.__index = Host
+EM.hosts = {}
+
+function EM:AddHost(getBar, height)
+    local host = setmetatable({ getBar = getBar, height = height, marks = {} }, Host)
+    self.hosts[#self.hosts + 1] = host
+    return host
+end
+
+EM.prd = EM:AddHost(powerBar)
+
+function Host:Build(bar)
     if self.frame and self.frame:GetParent() == bar then return end
     local f = self.frame or CreateFrame("Frame")
     f:SetParent(bar)
     f:ClearAllPoints()
     f:SetAllPoints(bar)
-    f:SetFrameLevel((bar:GetFrameLevel() or 0) + 5)
+    -- (a host bar of our own: its child is above it already)
+    if not self.height then f:SetFrameLevel((bar:GetFrameLevel() or 0) + 5) end
     self.frame = f
-    self.marks = self.marks or {}
     -- The bar resized (Edit Mode): placed again
-    if not self.hooked and bar.HookScript then
+    if not self.height and not self.hooked and bar.HookScript then
         self.hooked = true
         bar:HookScript("OnSizeChanged", function() EM:Layout() end)
     end
 end
 
--- Placed where each chosen spell's cost is
+function Host:Hide()
+    if self.frame then self.frame:Hide() end
+end
+
+-- Each cost's mark, the others hidden
+function Host:Place(bar, costs, max)
+    self:Build(bar)
+    local width, height
+    if not self.height then width, height = bar:GetWidth() or 0, bar:GetHeight() or 0 end
+    for i, cost in ipairs(costs) do
+        local m = self.marks[i]
+        if not m then
+            m = { tex = self.frame:CreateTexture(nil, "OVERLAY") }
+            m.tex:SetColorTexture(1, 1, 1, 1)
+            if self.height then
+                m.at = CreateFrame("StatusBar", nil, self.frame)
+                m.at:SetAllPoints(self.frame)
+                m.at:SetStatusBarTexture("Interface\\Buttons\\WHITE8X8")
+                m.at:SetStatusBarColor(0, 0, 0, 0)
+            end
+            self.marks[i] = m
+        end
+        m.cost, m.curve = cost, litCurve(cost, max)
+        m.tex:ClearAllPoints()
+        if self.height then
+            m.at:SetMinMaxValues(0, max)
+            m.at:SetValue(cost)
+            m.tex:SetSize(WIDTH, self.height + 4)
+            m.tex:SetPoint("CENTER", m.at:GetStatusBarTexture(), "RIGHT", 0, 0)
+        else
+            m.tex:SetSize(WIDTH, height + 4)
+            m.tex:SetPoint("CENTER", bar, "LEFT", width * cost / max, 0)
+        end
+        m.tex:Show()
+    end
+    for i = #costs + 1, #self.marks do
+        self.marks[i].tex:Hide()
+        self.marks[i].cost = nil
+    end
+    self.frame:SetShown(#costs > 0)
+end
+
+-- Placed where each chosen spell's cost is, on every host bar there is
 function EM:Layout()
     if not SRH.db then return end
-    local bar = powerBar()
-    if not (bar and isRogue() and (UnitPowerType and UnitPowerType("player")) == ENERGY) then
-        if self.frame then self.frame:Hide() end
+    local bars, any = {}, false
+    for i, host in ipairs(self.hosts) do
+        bars[i] = host.getBar()
+        any = any or bars[i] ~= nil
+    end
+    if not (any and isRogue() and (UnitPowerType and UnitPowerType("player")) == ENERGY) then
+        for _, host in ipairs(self.hosts) do host:Hide() end
         return
     end
     local ok, max = pcall(function()
@@ -148,31 +214,14 @@ function EM:Layout()
         return
     end
     self.pending = nil
-    self:Build(bar)
     local marked = self:Marked()
     local costs = {}
     for _, sp in ipairs(self:Spells()) do
         if marked[sp.name] and sp.cost < max then costs[#costs + 1] = sp.cost end
     end
-    local width, height = bar:GetWidth() or 0, bar:GetHeight() or 0
-    for i, cost in ipairs(costs) do
-        local m = self.marks[i]
-        if not m then
-            m = { tex = self.frame:CreateTexture(nil, "OVERLAY") }
-            m.tex:SetColorTexture(1, 1, 1, 1)
-            self.marks[i] = m
-        end
-        m.cost, m.curve = cost, litCurve(cost, max)
-        m.tex:SetSize(WIDTH, height + 4)
-        m.tex:ClearAllPoints()
-        m.tex:SetPoint("CENTER", bar, "LEFT", width * cost / max, 0)
-        m.tex:Show()
+    for i, host in ipairs(self.hosts) do
+        if bars[i] then host:Place(bars[i], costs, max) else host:Hide() end
     end
-    for i = #costs + 1, #self.marks do
-        self.marks[i].tex:Hide()
-        self.marks[i].cost = nil
-    end
-    self.frame:SetShown(#costs > 0)
     self:Light()
 end
 
@@ -186,7 +235,7 @@ local function plainColor(m)
 end
 
 -- Lit or dim, as the energy is now
-function EM:Light()
+function Host:Light()
     if not (self.frame and self.frame:IsShown()) then return end
     for _, m in ipairs(self.marks) do
         if m.cost then
@@ -197,10 +246,14 @@ function EM:Light()
     end
 end
 
+function EM:Light()
+    for _, host in ipairs(self.hosts) do host:Light() end
+end
+
 ---------------------------------------------------------------------------
--- The window's rows (Window.lua): this character's energy spells, each
--- marked or not. b.header(text), b.info(text), b.check{ id, label, tip,
--- get, set }
+-- The window's rows (Window.lua): the option of the target's health bar,
+-- then this character's energy spells, each marked or not. b.header(text),
+-- b.info(text), b.check{ id, label, tip, get, set }
 ---------------------------------------------------------------------------
 function EM:Rows(b)
     b.header(L.MARKS_NAME)
@@ -208,7 +261,10 @@ function EM:Rows(b)
         b.info(L.MARKS_ROGUE_ONLY)
         return
     end
-    if not powerBar() then b.info(L.MARKS_NO_DISPLAY) end
+    -- First, the option: the marks under the target's health bar too
+    local hud = SRH.TargetHud
+    if hud then hud:Rows(b) end
+    if not powerBar() and not (hud and hud:Enabled()) then b.info(L.MARKS_NO_DISPLAY) end
     local spells = self:Spells()
     if #spells == 0 then
         b.info(L.MARKS_NO_SPELL)

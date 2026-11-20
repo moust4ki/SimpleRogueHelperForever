@@ -171,6 +171,41 @@ function M.SetColorTexture(s, r, g, b, a) s.colorTexture = { r, g, b, a } end
 function M.SetTexture(s, v) s.texture = v end
 function M.RegisterForClicks(s, ...) s.clicks = { ... } end
 function M.HasFocus(s) return s.focus == true end
+function M.CreateMaskTexture(s) return mock("MaskTexture", nil, s) end
+-- Status bars: their range and value (secret ones too), their fill texture
+function M.SetMinMaxValues(s, min, max) s.min, s.max = min, max end
+function M.SetValue(s, v) s.value = v end
+function M.SetStatusBarColor(s, r, g, b, a) s.barColor = { r, g, b, a } end
+function M.GetStatusBarTexture(s)
+  local fill = rawget(s, "fill")
+  if not fill then
+    fill = mock("Texture", nil, s)
+    fill.bar = s
+    rawset(s, "fill", fill)
+  end
+  return fill
+end
+
+---------------------------------------------------------------------------
+-- Secret values: what the game may hand addons in combat. Shown by the
+-- widgets that take them (a status bar...), but any arithmetic or
+-- comparison on one by the addon is an error, as in the game
+---------------------------------------------------------------------------
+local SECRET = {}
+local function refuse() error("attempt to perform arithmetic or comparison on a secret value") end
+for _, k in ipairs({ "__add", "__sub", "__mul", "__div", "__mod", "__pow", "__unm", "__lt", "__le", "__concat", "__len" }) do
+  SECRET[k] = refuse
+end
+SECRET.__tostring = function() return "<secret>" end
+function secret(v) return setmetatable({ secretValue = v }, SECRET) end
+function issecretvalue(v) return getmetatable(v) == SECRET end
+function reveal(v) if issecretvalue(v) then return v.secretValue end return v end
+-- How full a status bar shows (0 to 1), as the player sees it
+function filled(bar)
+  local min, max, v = reveal(bar.min) or 0, reveal(bar.max) or 1, reveal(bar.value) or 0
+  if max <= min then return 0 end
+  return math.max(0, math.min(1, (v - min) / (max - min)))
+end
 
 -- Frames made by the addon: each name a global (watched, see below), each
 -- one's events fired
@@ -329,11 +364,69 @@ UnitPowerPercent = function(unit, power, unmodified, curve)
   return curve:Evaluate(ENERGY.now / ENERGY.max)
 end
 
+---------------------------------------------------------------------------
+-- The target (TARGET: nil, or { enemy = true }), the combo points on it
+-- (COMBO), the nameplates shown (PLATES: the target's at PLATES.target),
+-- each with the game's unit frame: its health bar, its cast bar under it.
+-- A nameplate keeps its sizes from addons: what is drawn on it reads them
+-- as secrets
+---------------------------------------------------------------------------
+TARGET, COMBO, PLATES = nil, 0, {}
+UnitExists = function(unit) return unit == "player" or (unit == "target" and TARGET ~= nil) end
+UnitCanAttack = function(_, unit) return unit == "target" and TARGET ~= nil and TARGET.enemy == true end
+GetComboPoints = function() return COMBO end
+C_NamePlate = { GetNamePlateForUnit = function(unit) return PLATES[unit] end }
+cvars = { nameplateShowEnemies = "1" }
+function GetCVarBool(name) return cvars[name] == "1" end
+function newPlate(name)
+  local plate = mock("Frame", name)
+  plate.secretSizes = true
+  plate.UnitFrame = mock("Frame", nil, plate)
+  plate.UnitFrame.HealthBarsContainer = mock("Frame", nil, plate.UnitFrame)
+  plate.UnitFrame.CastBarsContainer = mock("Frame", nil, plate.UnitFrame)
+  return plate
+end
+local function onPlate(s)
+  while s do
+    if rawget(s, "secretSizes") then return true end
+    s = rawget(s, "parent")
+  end
+  return false
+end
+function M.GetWidth(s) if onPlate(s) then return secret(s.w or 0) end return s.w or 0 end
+function M.GetHeight(s) if onPlate(s) then return secret(s.h or 0) end return s.h or 0 end
+function M.GetFrameLevel(s) if onPlate(s) then return secret(s.level) end return s.level end
+
+-- The bar under the target's health bar, as shown: "on <nameplate>,
+-- energy <now>/<max>, combo <points lit>", or "hidden"
+function hud()
+  local H = NS.TargetHud
+  local f = H and H.frame
+  if not (f and f.shown) then return "hidden" end
+  local lit = 0
+  for _, pip in ipairs(H.pips) do if filled(pip) == 1 then lit = lit + 1 end end
+  return string.format("on %s, energy %s/%s, combo %d", tostring(f.parent and f.parent.name),
+    tostring(reveal(H.energy.value)), tostring(reveal(H.energy.max)), lit)
+end
+-- Its marks: "cost@where lit" (or dim) each, where = how far along the bar
+-- (0 to 1) its own hidden bar ends
+function hudMarks()
+  local t = {}
+  local host = NS.TargetHud and NS.TargetHud.host
+  for _, m in ipairs(host and host.marks or {}) do
+    if m.cost and m.tex.shown ~= false then
+      local lit = m.tex.color and m.tex.color[3] < 0.5
+      t[#t + 1] = string.format("%d@%.2f%s", m.cost, filled(m.at), lit and " lit" or " dim")
+    end
+  end
+  return table.concat(t, " ")
+end
+
 -- The marks on the bar as drawn: "cost@x lit" (or dim) each
 function marks()
   local t = {}
   local EM = NS.EnergyMarks
-  for _, m in ipairs(EM and EM.marks or {}) do
+  for _, m in ipairs(EM and EM.prd.marks or {}) do
     if m.cost and m.tex.shown ~= false then
       local _, _, _, x = m.tex:GetPoint(1)
       local lit = m.tex.color and m.tex.color[3] < 0.5
