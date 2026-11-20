@@ -169,6 +169,12 @@ function M.SetTextColor(s, r, g, b) s.textColor = { r, g, b } end
 function M.SetVertexColor(s, r, g, b, a) s.color = { r, g, b, a } end
 function M.SetColorTexture(s, r, g, b, a) s.colorTexture = { r, g, b, a } end
 function M.SetTexture(s, v) s.texture = v end
+function M.SetAtlas(s, name, useSize)
+  s.atlas = name
+  local info = useSize and ATLASES[name]
+  if info then s.w, s.h = info.width, info.height end
+end
+function M.SetStatusBarTexture(s, v) s.barTexture = v end
 function M.RegisterForClicks(s, ...) s.clicks = { ... } end
 function M.HasFocus(s) return s.focus == true end
 function M.CreateMaskTexture(s) return mock("MaskTexture", nil, s) end
@@ -252,7 +258,17 @@ EventRegistry = { RegisterCallback = function(_, ev, fn, owner)
   table.insert(listeners[ev], function(...) fn(owner, ...) end)
 end }
 function callback(ev, ...) for _, fn in ipairs(listeners[ev] or {}) do safecall(fn, ...) end end
-C_Texture = { GetAtlasInfo = function(n) if n:find("^Gamepad_") then return {} end end }
+-- The atlases this client has (the gamepad icons, the personal resource
+-- display's energy bar, the rogue's combo points), with their sizes
+ATLASES = {
+  ["UI-HUD-CoolDownManager-Bar"] = { width = 64, height = 16 }, ["UI-HUD-CoolDownManager-Bar-BG"] = { width = 72, height = 26 },
+  ["uf-roguecp-bg-shadow"] = { width = 24, height = 24 }, ["uf-roguecp-bg-dis"] = { width = 21, height = 21 },
+  ["uf-roguecp-bg"] = { width = 21, height = 21 }, ["uf-roguecp-icon-red"] = { width = 13, height = 13 },
+}
+C_Texture = { GetAtlasInfo = function(n)
+  if n:find("^Gamepad_") then return {} end
+  return ATLASES[n]
+end }
 -- The game's windows that may have the pad
 SettingsPanel = mock("Frame", "SettingsPanel") SettingsPanel.shown = false
 GameMenuFrame = mock("Frame", "GameMenuFrame") GameMenuFrame.shown = false
@@ -404,7 +420,10 @@ function hud()
   local f = H and H.frame
   if not (f and f.shown) then return "hidden" end
   local lit = 0
-  for _, pip in ipairs(H.pips) do if filled(pip) == 1 then lit = lit + 1 end end
+  for _, pip in ipairs(H.pips) do
+    -- (lit: every layer of it full)
+    if filled(pip.on) == 1 and (not pip.gem or filled(pip.gem) == 1) then lit = lit + 1 end
+  end
   return string.format("on %s, energy %s/%s, combo %d", tostring(f.parent and f.parent.name),
     tostring(reveal(H.energy.value)), tostring(reveal(H.energy.max)), lit)
 end

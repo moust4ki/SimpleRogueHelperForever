@@ -24,8 +24,9 @@ have enough energy to cast it.
 
 Tick **Under the target's health bar: energy, marks and combo points**, the first row of the window
 (off by default). On the nameplate of the enemy you target, under its cast bar (never over it: a cast
-to kick stays in sight), a thin energy bar with the same marks, and your combo points, centered under
-it. Your energy, your combo points and the enemy's health are then in one place, where the eye
+to kick stays in sight), an energy bar with the same marks, and your combo points, centered under
+it, drawn with the game's own art (the personal resource display's energy bar and the rogue's combo
+points). Your energy, your combo points and the enemy's health are then in one place, where the eye
 already is: no more looking back and forth between the enemy and the personal resource display,
 which you can hide.
 
