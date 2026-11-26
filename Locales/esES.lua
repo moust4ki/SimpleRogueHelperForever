@@ -16,12 +16,13 @@ SRH.LOCALES.esES = {
     V_CHANGE = "Cambiar",
     -- Energy marks (EnergyMarks.lua)
     SEC_MARKS = "Marcas",
-    TIP_SEC_MARKS = "Pícaros: en la barra de recursos personal del juego (actívala en el modo de edición), una marca fina en la barra de energía al coste de cada hechizo elegido (el coste del juego: un talento que lo reduce la mueve), tenue por debajo, encendida en cuanto tienes energía para lanzarlo. Elegido por personaje.",
+    TIP_SEC_MARKS = "Pícaros: en la barra de recursos personal del juego (actívala en el modo de edición), hasta cinco marcas finas en la barra de energía, cada una a la energía que elijas, tenue por debajo, encendida en cuanto la tienes. Ajustado por personaje.",
     MARKS_NAME = "Marcas en la barra de energía",
     MARKS_ROGUE_ONLY = "Solo pícaros.",
     MARKS_NO_DISPLAY = "La barra de recursos personal del juego no está: actívala en el modo de edición.",
-    MARKS_NO_SPELL = "Ninguno de tus hechizos cuesta energía.",
-    TIP_MARKS_SPELL = "Una marca en la barra de energía al coste de este hechizo, encendida en cuanto tienes energía suficiente.",
+    MARK_N = "Marca %d",
+    MARK_NONE = "Ninguna",
+    TIP_MARK = "Una marca en la barra de energía a esta energía, encendida en cuanto la tienes (Ninguna: sin marca). Mantenida, la cruceta sigue.",
     -- On the target's health bar (TargetHud.lua)
     HUD_OPTION = "En la barra de salud del objetivo: puntos de combo, energía y marcas",
     TIP_HUD = "Tus puntos de combo y tu energía, con sus marcas, en la barra de salud de tu objetivo (su placa de nombre), encima o debajo según elijas: todo en el mismo sitio. Se muestra para un enemigo seleccionado cuya placa de nombre es visible.",
@@ -34,6 +35,8 @@ SRH.LOCALES.esES = {
     TIP_HUD_GAP = "El espacio entre la barra de salud del objetivo y tu energía.",
     HUD_SCALE = "Tamaño",
     TIP_HUD_SCALE = "El tamaño de los puntos de combo y el grosor de la barra de energía (tan ancha como la barra de salud, sea cual sea el tamaño).",
+    HUD_TEXT = "Valor de energía",
+    TIP_HUD_TEXT = "Tu energía en número, en el centro de la barra de energía (también en combate).",
 }
 
 -- Latin American Spanish: the same

@@ -23,7 +23,7 @@ OPTIONAL = {"SimpleRogueHelperCharDB", "PersonalResourceDisplayFrame", "ChatFram
             "GameMenuFrame", "SettingsPanel", "GamepadMode", "InterfaceOptions_AddCategory", "Settings",
             "EventRegistry", "C_CurveUtil", "UnitPowerPercent", "CreateColor", "C_Texture", "C_Spell", "C_SpellBook",
             "UnitPowerType", "Enum", "UIErrorsFrame", "C_NamePlate", "PowerBarColor", "GetComboPoints", "GetCVarBool",
-            "NAMEPLATE_OPTIONS_LABEL"}
+            "NAMEPLATE_OPTIONS_LABEL", "TextStatusBarText"}
 
 
 def names(lua, table):
@@ -36,7 +36,7 @@ def everything(lua):
     # a fight (the values hidden), the key binding, the bar resized
     lua.execute(r'''
     local W, EM = NS.Window, NS.EnergyMarks
-    EM:SetMarked("Éviscération", true)
+    SimpleRogueHelperCharDB.values[1] = 35 EM:Layout()
     ENERGY.now = 50 fire("UNIT_POWER_FREQUENT", "player")
     bar.w = 300 if bar.hooks then bar.hooks.OnSizeChanged(bar) end
     fire("SPELLS_CHANGED") fire("PLAYER_TALENT_UPDATE") fire("CHARACTER_POINTS_CHANGED") fire("LEARNED_SPELL_IN_SKILL_LINE")
@@ -99,7 +99,7 @@ UNKNOWN_EVENTS = { TRAIT_CONFIG_UPDATED = true, PLAYER_TALENT_UPDATE = true, CHA
 ''')
 everything(bare)
 bare.execute('check("C everything done again, no error", #errors, 0)')
-bare.execute('check("C the marks lit from the energy (no curves)", marks(), "35@105.0 lit 45@135.0 lit")')
+bare.execute('check("C the marks lit from the energy (no curves; mark 2 set to 1 by the pad)", marks(), "1@3.0 lit 35@105.0 lit")')
 bare.execute('check("C no nameplates from the game: nothing under the target", hud(), "hidden")')
 bare.execute('check("C the help bar\'s buttons as letters", NS.Window.frame.help.text:find("B|r", 1, true) ~= nil, true)')
 lua.execute("fails = fails + %d" % bare.eval("fails"))

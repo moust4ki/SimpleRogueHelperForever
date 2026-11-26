@@ -4,21 +4,21 @@
 
 Download: [CurseForge](https://www.curseforge.com/wow/addons/simpleroguehelper-forever)
 
-**Energy marks for rogues on WoW Forever.** On the game's own personal resource display, a thin
-mark on the energy bar at the energy each spell you choose costs: dim below it, lit (gold) once you
-have enough energy to cast it.
+**Energy marks for rogues on WoW Forever.** On the game's own personal resource display, up to five
+thin marks on the energy bar, each at the energy you set: dim below it, lit (gold) once you have that
+much energy.
 
-- **The game's cost**: read from the game (`C_Spell.GetSpellPowerCost`, its energy entry), so a
-  talent that lowers a spell's cost moves its mark.
-- **Your spells**: the window lists the spells of your spell book that cost energy, the cheapest
-  first. Tick the ones you want marked. They are kept by name (a new rank keeps its mark) and per
-  character.
+- **Your values**: *Mark 1* to *Mark 5* in the window, each from 1 to your maximum energy less one
+  (a mark at the full bar would only light at full), or *None*. Fixed: the addon reads no spell
+  cost from the game (WoW Forever's *Poised* makes it give lowered ones out of combat at full
+  energy), so nothing moves them but you. Kept per character.
 - **On the bar itself**: the marks belong to the game's energy bar, so they show, hide and scale with
-  it. They are placed again when your maximum energy changes, when your spell book or talents
-  change, and when the bar is resized in Edit Mode.
-- **In combat**, the game may hide power values from addons. The marks then stay where they were
-  (placed again after the fight) and are lit by the game itself, through `UnitPowerPercent` and a
-  step colour curve; if that isn't available, from the energy, else they stay dim.
+  it. They are placed again when your maximum energy changes and when the bar is resized in Edit
+  Mode; a mark at your maximum energy or above is hidden (kept for later).
+- **In combat**, the game may hide power values from addons. The marks are then placed with the
+  last maximum energy known (placed again after the fight) and are lit by the game itself, through
+  `UnitPowerPercent` and a step colour curve; if that isn't available, from the energy, else they
+  stay dim.
 
 ## Everything on the target's health bar (option)
 
@@ -39,6 +39,9 @@ Its choices, under the option in the window while it is on (per character):
   resource display stacks its bars).
 - **Size**: 50 % to 150 %, the combo points and the energy bar's thickness; as wide as the health bar
   whatever the size.
+- **Energy value**: your energy as a number, in the middle of the energy bar, in the game's font for
+  a bar's value (off by default; in combat too). On the personal resource display, the game has its
+  own: *Show Bar Text* in Edit Mode.
 
 - Shown for an enemy you target whose nameplate is shown (turn on the game's enemy nameplates); hidden
   otherwise (no target, a friend, the enemy too far or off screen).
@@ -62,7 +65,7 @@ test.
 
 1. **Turn on the personal resource display**: Edit Mode, *Personal Resource Display*. The marks are
    drawn on its energy bar.
-2. **Open the window** and tick your spells:
+2. **Open the window** and set your marks:
    - type `/srh`;
    - or *Escape > Options > AddOns > SimpleRogueHelper - Forever > Open the configuration* (the window
      opens once the options and the game menu are closed);
@@ -74,8 +77,8 @@ test.
 | Gamepad | Mouse | |
 | --- | --- | --- |
 | D-pad up / down | hover | Move (held: repeats) |
-| A | click a row | Check / uncheck (the option, a spell); a choice: the next value |
-| D-pad left / right, on a choice | wheel over it, right click | Change it (a right click: the value before) |
+| A | click a row | Check / uncheck (an option); on a value: the next one (past the highest, none) |
+| D-pad left / right, on a value | wheel over it, right click | Change it (held: repeats; a right click: the value before) |
 | B, Escape | the × button | Close |
 | LB / RB, D-pad left / right | wheel, `<` `>` | Previous / next page (8 rows a page) |
 
@@ -91,9 +94,15 @@ language. Spell names are the game's.
 
 ## Saved variables
 
-`SimpleRogueHelperCharDB`, per character: `{ marks = { ["Spell name"] = true }, hud = false,
-hudPos = "above", hudGap = 6, hudScale = 1 }` (`hud`: the option of the target's health bar, then its
-place, spacing and size). A file edited by hand that holds anything else is cleaned at load.
+`SimpleRogueHelperCharDB`, per character: `{ values = { 25, 35, 0, 0, 0 }, hud = false, hudPos =
+"above", hudGap = 6, hudScale = 1, hudText = false, version = 2 }` (`values`: the five marks' energy,
+0 for none; `hud`: the option of the target's health bar, then its place, spacing, size and energy
+value). A file edited by hand that holds anything else is cleaned at load.
+
+Up to 1.1, the marks were by spell (`marks = { ["Spell name"] = true }`), at the cost the game gave.
+Once, each spell marked becomes a value, its regular cost: read when Poised can't lower it (out of a
+fight, the energy below full), so a character logged in at full energy gets its values after its first
+ability. The five cheapest are kept; a value set meanwhile keeps the window's.
 
 ## Development
 
@@ -115,14 +124,15 @@ The tests run the addon's files in a small simulation of the game (Lua 5.1 throu
 D:\Dev\ControllerKeyboard-tests\venv\Scripts\python.exe tests\run_all.py
 ```
 
-- `t01_energy_marks.py`: the marks (cost, lit / dim, placed again, combat, per character)
+- `t01_energy_marks.py`: the marks (values set with the pad and the mouse, lit / dim, placed again,
+  combat, per character, 1.1's marks by spell made values)
 - `t02_window.py`: the window (D-pad, A, B, pages, held buttons, combat, mouse, options, chat,
   `Bindings.xml`)
 - `t03_locales.py`: the same keys and codes in every language, the TOC
 - `t04_globals.py`: no global beyond the game's needs, none of the game's replaced, nothing of Easy
   Controller - Forever's
 - `t05_target_hud.py`: on the target's health bar (off at first, the game's art, the target changing,
-  combat with the values hidden, place / spacing / size, per character)
+  combat with the values hidden, place / spacing / size, the energy value, per character)
 
 Each test's output is written to `tests/out/`.
 

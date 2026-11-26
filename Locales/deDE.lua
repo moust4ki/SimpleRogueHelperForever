@@ -16,12 +16,13 @@ SRH.LOCALES.deDE = {
     V_CHANGE = "Ändern",
     -- Energy marks (EnergyMarks.lua)
     SEC_MARKS = "Marken",
-    TIP_SEC_MARKS = "Schurken: auf der persönlichen Ressourcenanzeige des Spiels (im Bearbeitungsmodus einschalten) eine feine Marke auf dem Energiebalken bei den Kosten jedes gewählten Zaubers (die Kosten des Spiels: ein Talent, das sie senkt, verschiebt sie), schwach darunter, hell, sobald du genug Energie hast. Pro Charakter gewählt.",
+    TIP_SEC_MARKS = "Schurken: auf der persönlichen Ressourcenanzeige des Spiels (im Bearbeitungsmodus einschalten) bis zu fünf feine Marken auf dem Energiebalken, jede bei der Energie, die du einstellst, schwach darunter, hell, sobald du so viel hast. Pro Charakter eingestellt.",
     MARKS_NAME = "Marken auf dem Energiebalken",
     MARKS_ROGUE_ONLY = "Nur Schurken.",
     MARKS_NO_DISPLAY = "Die persönliche Ressourcenanzeige des Spiels ist nicht da: Schalte sie im Bearbeitungsmodus ein.",
-    MARKS_NO_SPELL = "Keiner deiner Zauber kostet Energie.",
-    TIP_MARKS_SPELL = "Eine Marke auf dem Energiebalken bei den Kosten dieses Zaubers, hell, sobald du genug Energie hast.",
+    MARK_N = "Marke %d",
+    MARK_NONE = "Keine",
+    TIP_MARK = "Eine Marke auf dem Energiebalken bei dieser Energie, hell, sobald du so viel hast (Keine: keine Marke). Gehalten läuft das Steuerkreuz weiter.",
     -- On the target's health bar (TargetHud.lua)
     HUD_OPTION = "Am Lebensbalken des Ziels: Combopunkte, Energie und Marken",
     TIP_HUD = "Deine Combopunkte und deine Energie mit ihren Marken direkt am Lebensbalken deines Ziels (seiner Namensplakette), darüber oder darunter nach deiner Wahl: alles an einem Ort. Angezeigt für einen anvisierten Feind, dessen Namensplakette sichtbar ist.",
@@ -34,4 +35,6 @@ SRH.LOCALES.deDE = {
     TIP_HUD_GAP = "Der Abstand zwischen dem Lebensbalken des Ziels und deiner Energie.",
     HUD_SCALE = "Größe",
     TIP_HUD_SCALE = "Die Größe der Combopunkte und die Dicke des Energiebalkens (so breit wie der Lebensbalken, egal welche Größe).",
+    HUD_TEXT = "Energiewert",
+    TIP_HUD_TEXT = "Deine Energie als Zahl, in der Mitte des Energiebalkens (auch im Kampf).",
 }

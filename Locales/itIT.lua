@@ -16,12 +16,13 @@ SRH.LOCALES.itIT = {
     V_CHANGE = "Cambia",
     -- Energy marks (EnergyMarks.lua)
     SEC_MARKS = "Indicatori",
-    TIP_SEC_MARKS = "Ladri: sulla barra delle risorse personali del gioco (attivala nella modalità modifica), un segno sottile sulla barra dell'energia al costo di ogni incantesimo scelto (il costo del gioco: un talento che lo riduce lo sposta), tenue sotto, acceso appena hai abbastanza energia per lanciarlo. Scelto per personaggio.",
+    TIP_SEC_MARKS = "Ladri: sulla barra delle risorse personali del gioco (attivala nella modalità modifica), fino a cinque segni sottili sulla barra dell'energia, ognuno all'energia che scegli, tenue sotto, acceso appena ce l'hai. Impostato per personaggio.",
     MARKS_NAME = "Segni sulla barra dell'energia",
     MARKS_ROGUE_ONLY = "Solo ladri.",
     MARKS_NO_DISPLAY = "La barra delle risorse personali del gioco non c'è: attivala nella modalità modifica.",
-    MARKS_NO_SPELL = "Nessun tuo incantesimo costa energia.",
-    TIP_MARKS_SPELL = "Un segno sulla barra dell'energia al costo di questo incantesimo, acceso appena hai abbastanza energia.",
+    MARK_N = "Segno %d",
+    MARK_NONE = "Nessuno",
+    TIP_MARK = "Un segno sulla barra dell'energia a questa energia, acceso appena ce l'hai (Nessuno: nessun segno). Tenuta premuta, la croce direzionale continua.",
     -- On the target's health bar (TargetHud.lua)
     HUD_OPTION = "Sulla barra della salute del bersaglio: punti combo, energia e segni",
     TIP_HUD = "I tuoi punti combo e la tua energia, con i suoi segni, sulla barra della salute del tuo bersaglio (la sua barra del nome), sopra o sotto a tua scelta: tutto nello stesso posto. Mostrato per un nemico selezionato con la barra del nome visibile.",
@@ -34,4 +35,6 @@ SRH.LOCALES.itIT = {
     TIP_HUD_GAP = "Lo spazio tra la barra della salute del bersaglio e la tua energia.",
     HUD_SCALE = "Dimensione",
     TIP_HUD_SCALE = "La dimensione dei punti combo e lo spessore della barra dell'energia (larga quanto la barra della salute, qualunque sia la dimensione).",
+    HUD_TEXT = "Valore dell'energia",
+    TIP_HUD_TEXT = "La tua energia in numero, al centro della barra dell'energia (anche in combattimento).",
 }

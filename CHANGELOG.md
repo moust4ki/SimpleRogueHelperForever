@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.2.0
+
+- **Marks at fixed values** (asked): up to five marks, each at the energy you set in the window
+  (`/srh`: *Mark 1* to *Mark 5*, D-pad left / right, held to go on; *None*: no mark). The addon no
+  longer reads the spells' costs from the game: from level 18, WoW Forever's *Poised* makes it give
+  lowered ones (10 less out of combat at full energy), and the marks stayed 10 energy too low in a
+  fight (Eviscerate's at 25 instead of 35). Your marks by spell become values once, each spell's
+  regular cost (read out of a fight, your energy below full: after your first ability if you log in
+  at full energy); check them in the window.
+- **The energy value on the target's health bar** (asked, a choice under the option, off by
+  default): your energy as a number, in the middle of the energy bar, in combat too.
+
 ## 1.1.0
 
 **After this update, quit and restart the game**: it adds a file, which a /reload doesn't load.

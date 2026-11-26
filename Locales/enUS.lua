@@ -21,12 +21,13 @@ SRH.L = {
     V_CHANGE = "Change",
     -- Energy marks (EnergyMarks.lua)
     SEC_MARKS = "Energy marks",
-    TIP_SEC_MARKS = "Rogues: on the game's personal resource display (turn it on in Edit Mode), a thin mark on the energy bar at the energy each chosen spell costs (the game's cost: a talent that lowers it moves it), dim below it, lit once you have enough energy to cast it. Chosen per character.",
+    TIP_SEC_MARKS = "Rogues: on the game's personal resource display (turn it on in Edit Mode), up to five thin marks on the energy bar, each at the energy you set, dim below it, lit once you have that much. Set per character.",
     MARKS_NAME = "Marks on the energy bar",
     MARKS_ROGUE_ONLY = "Rogues only.",
     MARKS_NO_DISPLAY = "The game's personal resource display isn't there: turn it on in Edit Mode.",
-    MARKS_NO_SPELL = "No spell of yours costs energy.",
-    TIP_MARKS_SPELL = "A mark on the energy bar at this spell's cost, lit once you have enough energy.",
+    MARK_N = "Mark %d",
+    MARK_NONE = "None",
+    TIP_MARK = "A mark on the energy bar at this energy, lit once you have that much (None: no mark). Held, the D-pad goes on.",
     -- On the target's health bar (TargetHud.lua)
     HUD_OPTION = "On the target's health bar: combo points, energy and marks",
     TIP_HUD = "Your combo points and your energy, with its marks, right on the health bar of your target (its nameplate), above or below it as you choose: everything in one place. Shown for an enemy you target whose nameplate is shown.",
@@ -39,4 +40,6 @@ SRH.L = {
     TIP_HUD_GAP = "The space between the target's health bar and your energy.",
     HUD_SCALE = "Size",
     TIP_HUD_SCALE = "The size of the combo points and the thickness of the energy bar (as wide as the health bar whatever the size).",
+    HUD_TEXT = "Energy value",
+    TIP_HUD_TEXT = "Your energy as a number, in the middle of the energy bar (in combat too).",
 }

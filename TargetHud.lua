@@ -11,7 +11,8 @@ local L = SRH.L
 -- from addons: they go straight to status bars, which show them without
 -- the addon reading them, and no size is read (the nameplate may keep its
 -- own from addons). A combo point is a bar of its own from i - 1 to i: full
--- once there are i, whatever the count, hidden or not.
+-- once there are i, whatever the count, hidden or not. The energy as a
+-- number on its bar, a choice: handed to the text as the game gives it.
 local HUD = {}
 SRH.TargetHud = HUD
 
@@ -58,7 +59,8 @@ end
 ---------------------------------------------------------------------------
 -- The player's choices (this character's): above or below the health bar,
 -- the space between them, the size (the energy bar's thickness and the
--- combo points; as wide as the health bar whatever the size)
+-- combo points; as wide as the health bar whatever the size); and the
+-- energy as a number on its bar, or not (hudText, off at first)
 ---------------------------------------------------------------------------
 local CHOICES = {
     hudPos = { values = { "above", "below" }, default = "above" },
@@ -78,6 +80,12 @@ function HUD:CleanSettings(db)
         end
         if not ok then db[key] = c.default end
     end
+    if type(db.hudText) ~= "boolean" then db.hudText = false end
+end
+
+function HUD:SetText(on)
+    SRH.db.hudText = on and true or false
+    self:Attach()
 end
 
 -- The next value (delta 1) or the one before (-1); `wrap`: past the last,
@@ -191,6 +199,19 @@ function HUD:Build()
     for i = 1, PIPS do self.pips[i] = comboPoint(row, i, art) end
     -- The marks, on its energy bar while the option is on
     self.host = SRH.EnergyMarks:AddHost(function() return HUD:Enabled() and HUD.energy or nil end, BAR_H)
+    -- The energy as a number (a choice), centered on its bar, over the
+    -- marks (their frame made now, this one above it), in the game's own
+    -- font for a bar's value
+    self.host:Build(self.energy)
+    local number = CreateFrame("Frame", nil, self.energy)
+    number:SetAllPoints(self.energy)
+    number:SetFrameLevel(self.host.frame:GetFrameLevel() + 2)
+    number.text = number:CreateFontString(nil, "OVERLAY")
+    local font = TextStatusBarText or GameFontHighlightSmall
+    if font then number.text:SetFontObject(font) end
+    number.text:SetPoint("CENTER", self.energy, "CENTER", 0, 0)
+    number:Hide()
+    self.number = number
 end
 
 -- In the order the place chosen asks: above the health bar, the combo
@@ -212,6 +233,7 @@ function HUD:Arrange()
         energy:SetPoint("BOTTOMRIGHT")
         row:SetPoint("BOTTOM", energy, "TOP", 0, 10)
     end
+    self.number:SetShown(SRH.db.hudText == true)
 end
 
 ---------------------------------------------------------------------------
@@ -263,9 +285,16 @@ local function setEnergy(bar)
     bar:SetValue(UnitPower("player", ENERGY))
 end
 
+-- (the text takes it hidden too; formatted by the game if not as it is)
+local function setNumber(text)
+    local power = UnitPower("player", ENERGY)
+    if not pcall(text.SetText, text, power) then text:SetFormattedText("%d", power) end
+end
+
 function HUD:Update()
     if not self.frame:IsShown() then return end
     pcall(setEnergy, self.energy)
+    if self.number:IsShown() and not pcall(setNumber, self.number.text) then self.number.text:SetText("") end
     -- (the count only handed on, never tested: it may be hidden)
     local ok, points = pcall(GetComboPoints, "player", "target")
     if not ok then points = 0 end
@@ -277,7 +306,8 @@ end
 
 ---------------------------------------------------------------------------
 -- The window's rows (EnergyMarks' rows, first): the option, while it is on
--- its choices (b.value{ id, label, tip, text, step }), and why nothing shows
+-- its choices (b.value{ id, label, tip, text, step }, the number a check),
+-- and why nothing shows
 -- when the game's enemy nameplates are off
 ---------------------------------------------------------------------------
 local function choiceRow(b, key, label, tip, text)
@@ -296,6 +326,9 @@ function HUD:Rows(b)
     choiceRow(b, "hudGap", L.HUD_GAP, L.TIP_HUD_GAP, function() return format("%d", db.hudGap) end)
     choiceRow(b, "hudScale", L.HUD_SCALE, L.TIP_HUD_SCALE,
         function() return format("%d %%", math.floor(db.hudScale * 100 + 0.5)) end)
+    b.check({ id = "hudText", label = L.HUD_TEXT, tip = L.TIP_HUD_TEXT,
+        get = function() return db.hudText == true end,
+        set = function(v) HUD:SetText(v) end })
     if GetCVarBool and not GetCVarBool("nameplateShowEnemies") then
         b.info(format(L.HUD_NO_NAMEPLATES, NAMEPLATE_OPTIONS_LABEL or "Nameplates"))
     end

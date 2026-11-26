@@ -120,6 +120,13 @@ function M.RegisterEvent(s, ev)
   rawset(s, "events", e)
   e[ev] = true
 end
+-- (for one unit only: fired with another, not delivered)
+function M.RegisterUnitEvent(s, ev, unit)
+  M.RegisterEvent(s, ev)
+  local u = rawget(s, "eventUnits") or {}
+  rawset(s, "eventUnits", u)
+  u[ev] = unit
+end
 function M.UnregisterEvent(s, ev) local e = rawget(s, "events") if e then e[ev] = nil end end
 function M.UnregisterAllEvents(s) rawset(s, "events", {}) end
 function M.CreateTexture(s) return mock("Texture", nil, s) end
@@ -160,6 +167,14 @@ function M.GetName(s) return s.name end
 function M.SetFrameLevel(s, l) s.level = l end
 function M.GetFrameLevel(s) return s.level end
 function M.SetText(s, v) s.text = v end
+-- (formatted by the game: a hidden value gives a hidden text)
+function M.SetFormattedText(s, fmt, ...)
+  local args, hidden = { ... }, false
+  for i = 1, select("#", ...) do if issecretvalue(args[i]) then hidden = true end args[i] = reveal(args[i]) end
+  local text = string.format(fmt, unpack(args, 1, select("#", ...)))
+  s.text = hidden and secret(text) or text
+end
+function M.SetFontObject(s, f) s.font = f end
 function M.GetText(s) return s.text end
 function M.GetStringHeight(s)
   local _, lines = tostring(s.text or ""):gsub("\n", "")
@@ -229,12 +244,15 @@ function CreateFrame(kind, name, parent, template)
 end
 function fire(event, ...)
   for _, f in ipairs(allFrames) do
-    local e = rawget(f, "events")
-    if e and e[event] and f.scripts.OnEvent then safecall(f.scripts.OnEvent, f, event, ...) end
+    local e, u = rawget(f, "events"), rawget(f, "eventUnits")
+    local forUnit = not (u and u[event]) or u[event] == (...)
+    if e and e[event] and forUnit and f.scripts.OnEvent then safecall(f.scripts.OnEvent, f, event, ...) end
   end
 end
 
 UIParent = mock("Frame", "UIParent")
+-- The game's font for a bar's value
+TextStatusBarText = mock("Font", "TextStatusBarText")
 UIParent.w, UIParent.h = 1920, 1080
 chatlog, uiErrors = {}, {}
 DEFAULT_CHAT_FRAME = { AddMessage = function(_, m) chatlog[#chatlog + 1] = m print("  chat> " .. m) end }
@@ -329,7 +347,8 @@ function tap(key, mods) press(key, mods) release(key, mods) end
 
 ---------------------------------------------------------------------------
 -- A rogue: 100 energy (40 now), the personal resource display's power bar
--- 200 wide, a spell book (BOOK, COSTS: tests change them)
+-- 200 wide, a spell book (BOOK, COSTS: tests change them; read only to
+-- make 1.1's marks by spell values)
 ---------------------------------------------------------------------------
 CLASS = "ROGUE"
 UnitClass = function() return "Voleur", CLASS end
@@ -345,6 +364,7 @@ PersonalResourceDisplayFrame.PowerBar = bar
 Enum = { SpellBookSpellBank = { Player = 0 }, SpellBookItemType = { Spell = 1 }, PowerType = { Energy = 3 },
   LuaCurveType = { Linear = 0, Step = 1 } }
 -- Two energy spells, a free one, a passive one
+spellCostReads = 0
 COSTS = { [2098] = 35, [1752] = 45, [1784] = 0 }
 BOOK = {
   { name = "Éviscération", spellID = 2098, iconID = 1, itemType = 1 },
@@ -357,9 +377,15 @@ C_SpellBook = {
   GetSpellBookSkillLineInfo = function() return { name = "Combat", itemIndexOffset = 0, numSpellBookItems = #BOOK } end,
   GetSpellBookItemInfo = function(i) return BOOK[i] end,
 }
+-- WoW Forever's Poised (out of combat at full energy, the next ability
+-- cheaper), as the game reports it: while POISED is set, every cost that
+-- much less (the tests set it, and take it off as the game would)
+POISED = 0
 C_Spell = { GetSpellPowerCost = function(id)
+  spellCostReads = spellCostReads + 1
   local c = COSTS[id]
   if c == nil then return nil end
+  if c > POISED then c = c - POISED elseif c > 0 then c = 0 end
   return { { type = 3, cost = c } }
 end }
 -- The game's step colour curves, and its power percentage through them
@@ -429,29 +455,29 @@ function hud()
   return string.format("on %s, energy %s/%s, combo %d", tostring(f.parent and f.parent.name),
     tostring(reveal(H.energy.value)), tostring(reveal(H.energy.max)), lit)
 end
--- Its marks: "cost@where lit" (or dim) each, where = how far along the bar
+-- Its marks: "value@where lit" (or dim) each, where = how far along the bar
 -- (0 to 1) its own hidden bar ends
 function hudMarks()
   local t = {}
   local host = NS.TargetHud and NS.TargetHud.host
   for _, m in ipairs(host and host.marks or {}) do
-    if m.cost and m.tex.shown ~= false then
+    if m.value and m.tex.shown ~= false then
       local lit = m.tex.color and m.tex.color[3] < 0.5
-      t[#t + 1] = string.format("%d@%.2f%s", m.cost, filled(m.at), lit and " lit" or " dim")
+      t[#t + 1] = string.format("%d@%.2f%s", m.value, filled(m.at), lit and " lit" or " dim")
     end
   end
   return table.concat(t, " ")
 end
 
--- The marks on the bar as drawn: "cost@x lit" (or dim) each
+-- The marks on the bar as drawn: "value@x lit" (or dim) each
 function marks()
   local t = {}
   local EM = NS.EnergyMarks
   for _, m in ipairs(EM and EM.prd.marks or {}) do
-    if m.cost and m.tex.shown ~= false then
+    if m.value and m.tex.shown ~= false then
       local _, _, _, x = m.tex:GetPoint(1)
       local lit = m.tex.color and m.tex.color[3] < 0.5
-      t[#t + 1] = string.format("%d@%.1f%s", m.cost, x or -1, lit and " lit" or " dim")
+      t[#t + 1] = string.format("%d@%.1f%s", m.value, x or -1, lit and " lit" or " dim")
     end
   end
   return table.concat(t, " ")

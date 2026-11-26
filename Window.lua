@@ -2,9 +2,9 @@ local _, SRH = ...
 local L = SRH.L
 
 -- The addon's settings window (/srh, its key binding, Escape > Options >
--- AddOns): this character's energy spells, each marked or not, and the
--- option of the target's health bar with its choices (EnergyMarks.lua and
--- TargetHud.lua give the rows). Driven with the gamepad (D-pad up / down:
+-- AddOns): the option of the target's health bar with its choices, and
+-- this character's five marks, each a value (TargetHud.lua and
+-- EnergyMarks.lua give the rows). Driven with the gamepad (D-pad up / down:
 -- move, A: check, B: close, LB / RB or D-pad left / right: page; on a
 -- value, D-pad left / right change it) or the mouse. As Easy Controller - Forever's panel it is our own frame, never
 -- a game panel: while it is shown the pad is bound to hidden buttons of
@@ -71,7 +71,7 @@ function W:Refresh()
         end,
     })
     self.header, self.infos, self.checks = header, infos, checks
-    -- Back on the spell focused before, else the first
+    -- Back on the row focused before, else the first
     self.focus = 1
     for i, row in ipairs(checks) do
         if row.id == keep then self.focus = i end
@@ -103,7 +103,7 @@ function W:StepPage(delta)
     self:Render()
 end
 
--- A (or a click): the focused spell marked, or not any more; a value, the
+-- A (or a click): the focused option checked, or not any more; a value, the
 -- next one (past the last, the first). `delta`: a value one way or the
 -- other, staying at its ends (the D-pad, a right click: back)
 function W:Act(index, delta)
@@ -199,7 +199,7 @@ local function newRow(f)
         end
     end)
     -- A click: A (a right click: a value back); the wheel over a value
-    -- changes it, over a spell turns the page
+    -- changes it, over a check turns the page
     row:RegisterForClicks("LeftButtonUp", "RightButtonUp")
     row:SetScript("OnClick", function(self, button)
         W:Act(self.index, button == "RightButton" and -1 or nil)
@@ -587,20 +587,10 @@ end
 function W:Init()
     self:CreateInput()
     self:RegisterOptions()
+    -- A fight: closed while the pad can still be let go
     local events = CreateFrame("Frame")
-    for _, event in ipairs({ "PLAYER_REGEN_DISABLED", "SPELLS_CHANGED", "PLAYER_TALENT_UPDATE",
-        "CHARACTER_POINTS_CHANGED", "TRAIT_CONFIG_UPDATED", "LEARNED_SPELL_IN_SKILL_LINE" }) do
-        pcall(events.RegisterEvent, events, event)
-    end
-    events:SetScript("OnEvent", function(_, event)
-        -- A fight: closed while the pad can still be let go
-        if event == "PLAYER_REGEN_DISABLED" then return W:Close() end
-        -- The spell book or the talents changed: the list again
-        if W:IsOpen() then
-            W:Refresh()
-            W:Render()
-        end
-    end)
+    events:RegisterEvent("PLAYER_REGEN_DISABLED")
+    events:SetScript("OnEvent", function() W:Close() end)
     -- A game window opened meanwhile (Start menu...) rebinds the pad when it
     -- closes: take the window's keys back
     if EventRegistry and EventRegistry.RegisterCallback then

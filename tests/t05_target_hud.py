@@ -12,8 +12,8 @@ from env import new_game, done
 lua = new_game()
 lua.execute(r'''
 local W, EM, HUD, L = NS.Window, NS.EnergyMarks, NS.TargetHud, NS.L
-EM:SetMarked("Éviscération", true)
-EM:SetMarked("Attaque pernicieuse", true)
+SimpleRogueHelperCharDB.values[1], SimpleRogueHelperCharDB.values[2] = 35, 45
+EM:Layout()
 TARGET, COMBO = { enemy = true }, 2
 PLATES.target = newPlate("plate1")
 fire("PLAYER_TARGET_CHANGED")
@@ -138,10 +138,10 @@ section("H  its choices: place, spacing, size")
 local db = SimpleRogueHelperCharDB
 check("H at first: above, 6 away, 100 %", db.hudPos .. " " .. db.hudGap .. " " .. db.hudScale, "above 6 1")
 W:Open()
-check("H the option off: no choice in the window", W.checks[2].id, "em_Éviscération")
+check("H the option off: no choice in the window", W.checks[2].id, "mark1")
 tap("PAD1")
-local ids = {} for i = 1, 4 do ids[i] = W.checks[i].id end
-check("H on: its choices under it", table.concat(ids, " "), "hud hudPos hudGap hudScale")
+local ids = {} for i = 1, 5 do ids[i] = W.checks[i].id end
+check("H on: its choices under it", table.concat(ids, " "), "hud hudPos hudGap hudScale hudText")
 local rows = W.frame.rows
 check("H shown as values", rows[2].value.text .. " | " .. rows[3].value.text .. " | " .. rows[4].value.text,
   "< " .. L.HUD_ABOVE .. " > | < 6 > | < 100 % >")
@@ -192,10 +192,53 @@ rows[2].scripts.OnMouseWheel(rows[2], -1)
 check("H the wheel over the place: changed", db.hudPos, "below")
 check("H the marks still there, the combo points too", hudMarks() .. " | " .. hud(), "35@0.35 lit 45@0.45 lit | on plate5, energy 50/100, combo 1")
 tap("PAD2")
+
+section("I  the energy as a number on its bar (a choice)")
+local number = HUD.number
+check("I off at first: not shown", tostring(db.hudText) .. " " .. tostring(number:IsVisible()), "false false")
+W:Open()
+check("I in the window, a box, its tip", tostring(rows[5].box.shown) .. " " .. tostring(rows[5].check.shown) .. " " .. W.checks[5].label, "true false " .. L.HUD_TEXT)
+rows[5].scripts.OnEnter(rows[5])
+check("I (its tip)", W.frame.tip.text, L.TIP_HUD_TEXT)
+rows[5].scripts.OnClick(rows[5], "LeftButton")
+check("I ticked: saved, shown, the energy now", tostring(db.hudText) .. " " .. tostring(number:IsVisible()) .. " " .. tostring(number.text.text), "true true 50")
+check("I (the row ticked)", rows[5].check.shown, true)
+local np = { number.text:GetPoint(1) }
+check("I in the middle of the energy bar, in the game's font for a bar's value", np[1] .. " " .. tostring(np[2] == HUD.energy) .. " " .. np[3] .. " " .. tostring(number.text.font == TextStatusBarText),
+  "CENTER true CENTER true")
+check("I over the marks", tostring(number:GetParent() == HUD.energy) .. " " .. tostring(number.level > HUD.host.frame.level), "true true")
+W:Close()
+ENERGY.now = 65 fire("UNIT_POWER_FREQUENT", "player")
+check("I the energy changes: the number with it", number.text.text, 65)
+combat = true fire("PLAYER_REGEN_DISABLED")
+UnitPower = function() return secret(ENERGY.now) end
+ENERGY.now = 30 fire("UNIT_POWER_FREQUENT", "player")
+check("I in combat, the energy hidden from addons: handed on as it is, no error",
+  tostring(issecretvalue(number.text.text)) .. " " .. tostring(reveal(number.text.text)) .. " " .. #errors, "true 30 0")
+rawset(number.text, "SetText", function(s, v) if issecretvalue(v) then error("refused") end s.text = v end)
+ENERGY.now = 35 fire("UNIT_POWER_FREQUENT", "player")
+check("I a text that refuses it as it is: formatted by the game", reveal(number.text.text) .. " " .. #errors, "35 0")
+rawset(number.text, "SetFormattedText", function() error("refused") end)
+ENERGY.now = 40 fire("UNIT_POWER_FREQUENT", "player")
+check("I refused both ways: empty, no error", number.text.text .. "|" .. #errors, "|0")
+rawset(number.text, "SetText", nil) rawset(number.text, "SetFormattedText", nil)
+UnitPower = function() return ENERGY.now end
+combat = false fire("PLAYER_REGEN_ENABLED")
+fire("UNIT_POWER_FREQUENT", "player")
+check("I after the fight", number.text.text, 40)
+check("I the marks as they were", hudMarks(), "35@0.35 lit 45@0.45 dim")
+PLATES.target = nil TARGET = nil fire("PLAYER_TARGET_CHANGED")
+check("I no target: hidden with the rest", tostring(number:IsVisible()) .. " " .. hud(), "false hidden")
+TARGET, PLATES.target = { enemy = true }, newPlate("plate6") fire("PLAYER_TARGET_CHANGED")
+check("I an enemy again: shown", tostring(number:IsVisible()) .. " " .. tostring(number.text.text), "true 40")
+W:Open()
+rows[5].scripts.OnClick(rows[5], "LeftButton")
+check("I unticked: saved, not shown", tostring(db.hudText) .. " " .. tostring(number:IsVisible()), "false false")
+W:Close()
 ''')
 
 # Saved per character: on at the next login, an enemy already targeted
-on = new_game(pre='SimpleRogueHelperCharDB = { marks = { ["Éviscération"] = true }, hud = true } '
+on = new_game(pre='SimpleRogueHelperCharDB = { values = { 35, 0, 0, 0, 0 }, hud = true } '
                   'TARGET, PLATES.target = { enemy = true }, newPlate("plate1")')
 on.execute('section("G  saved per character")')
 on.execute('check("G on at login: under the target", hud() .. " | " .. hudMarks(), "on plate1, energy 40/100, combo 0 | 35@0.35 lit")')
@@ -211,10 +254,13 @@ placed = new_game(pre='SimpleRogueHelperCharDB = { hud = true, hudPos = "below",
 placed.execute(r'''local p = { NS.TargetHud.frame:GetPoint(1) }
 check("G the place, space and size chosen, at the next login", p[1] .. ">" .. p[3] .. " " .. string.format("%.2f", p[5]) .. " " .. NS.TargetHud.frame:GetScale(),
   "TOPLEFT>BOTTOMLEFT -8.33 1.2")''')
-odd = new_game(pre='SimpleRogueHelperCharDB = { hud = true, hudPos = "left", hudGap = 99, hudScale = "big" }')
+odd = new_game(pre='SimpleRogueHelperCharDB = { hud = true, hudPos = "left", hudGap = 99, hudScale = "big", hudText = "yes" }')
 odd.execute(r'''local db = SimpleRogueHelperCharDB
-check("G choices edited by hand: the defaults, no error", db.hudPos .. " " .. db.hudGap .. " " .. db.hudScale .. " " .. #errors, "above 6 1 0")''')
-for g in (on, broken, plain, placed, odd):
+check("G choices edited by hand: the defaults, no error", db.hudPos .. " " .. db.hudGap .. " " .. db.hudScale .. " " .. tostring(db.hudText) .. " " .. #errors, "above 6 1 false 0")''')
+number = new_game(pre='SimpleRogueHelperCharDB = { hud = true, hudText = true } '
+                      'TARGET, PLATES.target = { enemy = true }, newPlate("plate1")')
+number.execute(r'''check("G the energy as a number, at the next login", tostring(NS.TargetHud.number:IsVisible()) .. " " .. tostring(NS.TargetHud.number.text.text), "true 40")''')
+for g in (on, broken, plain, placed, odd, number):
     g.execute("for _, e in ipairs(errors) do print('  ERR ' .. e) end")
     lua.execute("fails = fails + %d for i = 1, %d do errors[#errors + 1] = 'in another session (above)' end"
                 % (g.eval("fails"), g.eval("#errors")))

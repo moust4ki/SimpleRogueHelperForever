@@ -33,19 +33,22 @@ BINDING_NAME_SIMPLEROGUEHELPER_TOGGLE = L.BINDING_TOGGLE
 
 ---------------------------------------------------------------------------
 -- Saved variables: this character's (SavedVariablesPerCharacter), there
--- at ADDON_LOADED. { marks = { [spell name] = true }, hud = the marks and
--- combo points on the target's health bar (off at first), hudPos, hudGap,
--- hudScale = its place, space and size (TargetHud.lua) }; a file edited by
--- hand: what isn't of its kind is started again
+-- at ADDON_LOADED. { values = the five marks' energy, 0 none
+-- (EnergyMarks.lua), hud = the marks and combo points on the target's
+-- health bar (off at first), hudPos, hudGap, hudScale = its place, space
+-- and size, hudText = the energy as a number on its bar (TargetHud.lua) };
+-- a file edited by hand: what isn't of its kind is started again. 1.1's
+-- marks by spell (marks, costs) are kept until they are made values
+-- (EnergyMarks.lua)
 ---------------------------------------------------------------------------
 function SRH:InitDB()
     if type(SimpleRogueHelperCharDB) ~= "table" then SimpleRogueHelperCharDB = {} end
     local db = SimpleRogueHelperCharDB
-    if type(db.marks) ~= "table" then db.marks = {} end
     if type(db.hud) ~= "boolean" then db.hud = false end
     SRH.TargetHud:CleanSettings(db)
-    db.version = 1
+    db.version = 2
     self.db = db
+    SRH.EnergyMarks:Values()
 end
 
 function SRH:Print(msg, ...)

@@ -16,12 +16,13 @@ SRH.LOCALES.frFR = {
     V_CHANGE = "Changer",
     -- Energy marks (EnergyMarks.lua)
     SEC_MARKS = "Marqueurs",
-    TIP_SEC_MARKS = "Voleurs : sur la barre de ressources personnelle du jeu (à activer dans le mode Édition), un trait sur la barre d'énergie au coût de chaque sort choisi (le coût du jeu : un talent qui le réduit le déplace), discret en dessous, allumé dès que vous avez assez d'énergie pour le lancer. Choisi par personnage.",
+    TIP_SEC_MARKS = "Voleurs : sur la barre de ressources personnelle du jeu (à activer dans le mode Édition), jusqu'à cinq traits sur la barre d'énergie, chacun à l'énergie que vous choisissez, discret en dessous, allumé dès que vous l'avez. Réglé par personnage.",
     MARKS_NAME = "Traits sur la barre d'énergie",
     MARKS_ROGUE_ONLY = "Voleurs seulement.",
     MARKS_NO_DISPLAY = "La barre de ressources personnelle du jeu n'est pas là : activez-la dans le mode Édition.",
-    MARKS_NO_SPELL = "Aucun de vos sorts ne coûte d'énergie.",
-    TIP_MARKS_SPELL = "Un trait sur la barre d'énergie au coût de ce sort, allumé dès que vous avez assez d'énergie.",
+    MARK_N = "Trait %d",
+    MARK_NONE = "Aucun",
+    TIP_MARK = "Un trait sur la barre d'énergie à cette énergie, allumé dès que vous l'avez (Aucun : pas de trait). Maintenue, la croix continue.",
     -- On the target's health bar (TargetHud.lua)
     HUD_OPTION = "Sur la barre de vie de la cible : points de combo, énergie et traits",
     TIP_HUD = "Vos points de combo et votre énergie, avec ses traits, sur la barre de vie de votre cible (sa barre de nom), au-dessus ou en dessous selon votre choix : tout au même endroit. Affiché pour un ennemi ciblé dont la barre de nom est visible.",
@@ -34,4 +35,6 @@ SRH.LOCALES.frFR = {
     TIP_HUD_GAP = "L'espace entre la barre de vie de la cible et votre énergie.",
     HUD_SCALE = "Taille",
     TIP_HUD_SCALE = "La taille des points de combo et l'épaisseur de la barre d'énergie (aussi large que la barre de vie, quelle que soit la taille).",
+    HUD_TEXT = "Valeur de l'énergie",
+    TIP_HUD_TEXT = "Votre énergie en chiffres, au milieu de la barre d'énergie (en combat aussi).",
 }
